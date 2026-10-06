@@ -21,6 +21,7 @@ import {
   Armchair,
   Crown,
   Sparkles,
+  Lock,
 } from "lucide-react";
 import { Card, Badge, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
@@ -175,6 +176,14 @@ export default function GuestsPage() {
   };
 
   const exportCSV = () => {
+    if (userPlan !== "PRO") {
+      setUpgradeReason(
+        "Chức năng xuất dữ liệu danh sách khách mời ra file CSV/Excel là tiện ích độc quyền của Gói Hoàn Mỹ (PRO VIP). Nâng cấp ngay để xuất báo cáo!"
+      );
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+
     const headers = ["Họ và tên", "Số điện thoại", "Email", "Nhóm", "Phía", "RSVP", "Bàn tiệc", "Đi kèm", "Trẻ em", "Ghi chú"];
     const rows = guests.map((g) => {
       const assignedTbl = tables.find((t) => t.id === g.table_id);
@@ -246,12 +255,24 @@ export default function GuestsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="md" onClick={exportCSV}>
+          <Button
+            variant="outline"
+            size="md"
+            onClick={exportCSV}
+            title={userPlan !== "PRO" ? "Tính năng xuất CSV độc quyền PRO VIP (Đang bị khóa)" : "Xuất file CSV"}
+          >
             <Download className="h-4 w-4" />
             <span>Xuất CSV</span>
+            {userPlan !== "PRO" && (
+              <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ml-0.5" />
+            )}
           </Button>
           <Button variant="primary" size="md" onClick={handleOpenAdd}>
-            <Plus className="h-4 w-4" />
+            {userPlan !== "PRO" && guests.length >= 50 ? (
+              <Lock className="h-4 w-4 text-amber-300" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
             <span>Thêm khách mới</span>
           </Button>
         </div>

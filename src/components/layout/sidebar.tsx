@@ -26,6 +26,7 @@ import {
   Bot,
   ShieldAlert,
   Crown,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AuthService, AuthUser } from "@/services/auth.service";
@@ -38,6 +39,7 @@ interface NavGroup {
     href: string;
     icon: any;
     badge?: string;
+    isPro?: boolean;
   }[];
 }
 
@@ -49,7 +51,7 @@ const navGroups: NavGroup[] = [
       { label: "Công việc (Tasks)", href: "/tasks", icon: CheckSquare },
       { label: "Checklist thông minh", href: "/checklists", icon: ListTodo },
       { label: "Timeline & Lịch trình", href: "/timeline", icon: CalendarDays },
-      { label: "Chế độ Ngày Cưới", href: "/wedding-day", icon: HeartHandshake, badge: "Live" },
+      { label: "Chế độ Ngày Cưới", href: "/wedding-day", icon: HeartHandshake, badge: "Live", isPro: true },
     ],
   },
   {
@@ -57,7 +59,7 @@ const navGroups: NavGroup[] = [
     items: [
       { label: "Ngân sách (Budget)", href: "/budget", icon: PieChart },
       { label: "Chi tiêu (Expenses)", href: "/expenses", icon: Receipt },
-      { label: "Thanh toán (Payments)", href: "/payments", icon: CreditCard },
+      { label: "Thanh toán (Payments)", href: "/payments", icon: CreditCard, isPro: true },
       { label: "Nhà cung cấp (Vendors)", href: "/vendors", icon: Store },
     ],
   },
@@ -65,7 +67,7 @@ const navGroups: NavGroup[] = [
     title: "KHÁCH MỜI & KHÔNG GIAN",
     items: [
       { label: "Khách mời (Guests)", href: "/guests", icon: Users },
-      { label: "Sơ đồ bàn (Tables)", href: "/tables", icon: Armchair },
+      { label: "Sơ đồ bàn (Tables)", href: "/tables", icon: Armchair, isPro: true },
       { label: "Thiệp cưới online", href: "/invitations", icon: Send },
       { label: "Website đám cưới", href: "/wedding-website", icon: Globe },
     ],
@@ -76,7 +78,7 @@ const navGroups: NavGroup[] = [
       { label: "Album ảnh cưới", href: "/gallery", icon: ImageIcon },
       { label: "Ghi chú & Ý tưởng", href: "/notes", icon: StickyNote },
       { label: "Thông báo", href: "/notifications", icon: Bell },
-      { label: "Báo cáo & Phân tích", href: "/analytics", icon: BarChart3 },
+      { label: "Báo cáo & Phân tích", href: "/analytics", icon: BarChart3, isPro: true },
     ],
   },
 ];
@@ -85,6 +87,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
   const [isUpgradeOpen, setIsUpgradeOpen] = React.useState(false);
+  const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     const syncUser = () => {
@@ -144,19 +147,30 @@ export function Sidebar() {
             </p>
             {group.items.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+              const isLocked = Boolean(item.isPro && currentUser?.plan !== "PRO");
               const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => {
+                    if (isLocked) {
+                      e.preventDefault();
+                      setUpgradeReason(
+                        `Chức năng "${item.label}" là tiện ích độc quyền của Gói Hoàn Mỹ (PRO VIP). Khách hàng đang dùng Gói Miễn Phí cần nâng cấp để mở khoá!`
+                      );
+                      setIsUpgradeOpen(true);
+                    }
+                  }}
                   className={cn(
-                    "group flex items-center justify-between rounded-[10px] px-2.5 py-2 text-xs font-medium transition-all duration-150",
+                    "group flex items-center justify-between rounded-[10px] px-2.5 py-2 text-xs font-medium transition-all duration-150 cursor-pointer",
                     isActive
                       ? "bg-[#8B5E5A] text-white shadow-sm font-semibold"
                       : "text-[#6B5E5B] hover:bg-[#F5EFE7] hover:text-[#2C2422] dark:text-[#A69591] dark:hover:bg-[#221C1B] dark:hover:text-[#F5EFE7]"
                   )}
+                  title={isLocked ? `Chức năng ${item.label} đang bị khóa - Nâng cấp lên PRO VIP để sử dụng` : undefined}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <Icon
                       className={cn(
                         "h-4 w-4 transition-colors shrink-0",
@@ -165,11 +179,18 @@ export function Sidebar() {
                     />
                     <span className="truncate">{item.label}</span>
                   </div>
-                  {item.badge && (
-                    <span className="rounded-full bg-[#3F7D5A] px-1.5 py-0.5 text-[8px] font-bold uppercase text-white tracking-wider animate-pulse">
+                  {isLocked ? (
+                    <div className="flex items-center gap-1 shrink-0 ml-1.5">
+                      <span className="rounded bg-gradient-to-r from-amber-500/20 to-yellow-500/25 border border-amber-400/50 px-1 py-0.2 text-[8px] font-bold text-amber-800 dark:text-amber-300">
+                        PRO
+                      </span>
+                      <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                  ) : item.badge ? (
+                    <span className="rounded-full bg-[#3F7D5A] px-1.5 py-0.5 text-[8px] font-bold uppercase text-white tracking-wider animate-pulse shrink-0">
                       {item.badge}
                     </span>
-                  )}
+                  ) : null}
                 </Link>
               );
             })}
@@ -253,7 +274,10 @@ export function Sidebar() {
       <UpgradePlanModal
         open={isUpgradeOpen}
         onOpenChange={setIsUpgradeOpen}
-        reason="Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để trải nghiệm toàn bộ tiện ích quản lý đám cưới không giới hạn."
+        reason={
+          upgradeReason ||
+          "Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để trải nghiệm toàn bộ tiện ích quản lý đám cưới không giới hạn."
+        }
       />
     </aside>
   );

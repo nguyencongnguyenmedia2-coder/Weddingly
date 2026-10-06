@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { TimelineService, EmergencyContact } from "@/services/timeline.service";
 import { WeddingService } from "@/services/wedding.service";
 import { TimelineEvent, Wedding } from "@/types/database";
+import { LockedFeatureGuard } from "@/components/common/locked-feature-guard";
 
 export default function WeddingDayPage() {
   const [currentTime, setCurrentTime] = React.useState<string>("");
@@ -51,8 +52,12 @@ export default function WeddingDayPage() {
   const nextEvent = events[4] || events[1]; // Next event
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto animate-in fade-in duration-300">
-      {/* 1. Live Wedding Day Clock Card */}
+    <LockedFeatureGuard
+      featureName="Chế độ Ngày Cưới Trực Tiếp (Live Wedding Mode)"
+      description="Trung tâm điều phối thời gian thực và danh bạ hỗ trợ khẩn cấp, giúp toàn bộ kịch bản hôn lễ diễn ra suôn sẻ và chuẩn xác từng phút."
+    >
+      <div className="space-y-6 max-w-3xl mx-auto animate-in fade-in duration-300">
+        {/* 1. Live Wedding Day Clock Card */}
       <div className="rounded-[24px] bg-gradient-to-br from-[#8B5E5A] via-[#724B47] to-[#423633] p-6 sm:p-8 text-white text-center shadow-xl">
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-[#D6BE91] mb-3">
           <HeartHandshake className="h-4 w-4" />
@@ -169,6 +174,7 @@ export default function WeddingDayPage() {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </LockedFeatureGuard>
   );
 }

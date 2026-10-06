@@ -18,6 +18,7 @@ import { BudgetService } from "@/services/budget.service";
 import { GuestService } from "@/services/guest.service";
 import { TaskService } from "@/services/task.service";
 import { WeddingService } from "@/services/wedding.service";
+import { LockedFeatureGuard } from "@/components/common/locked-feature-guard";
 
 export default function AnalyticsPage() {
   const [dataLoaded, setDataLoaded] = React.useState(false);
@@ -46,8 +47,12 @@ export default function AnalyticsPage() {
   if (!dataLoaded) return null;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
+    <LockedFeatureGuard
+      featureName="Báo Cáo & Phân Tích Chuyên Sâu"
+      description="Hệ thống báo cáo tài chính toàn diện, phân tích tỉ trọng chi tiêu từng danh mục và xuất biểu đồ đối soát thông minh."
+    >
+      <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
@@ -196,5 +201,6 @@ export default function AnalyticsPage() {
         </Card>
       </div>
     </div>
+    </LockedFeatureGuard>
   );
 }

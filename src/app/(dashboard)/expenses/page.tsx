@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Crown,
   Sparkles,
+  Lock,
 } from "lucide-react";
 import { Card, Badge, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
@@ -201,7 +202,11 @@ export default function ExpensesPage() {
           </p>
         </div>
         <Button variant="primary" size="md" onClick={handleOpenAdd}>
-          <Plus className="h-4 w-4" />
+          {userPlan !== "PRO" && expenses.length >= 15 ? (
+            <Lock className="h-4 w-4 text-amber-300" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
           <span>Ghi nhận khoản chi</span>
         </Button>
       </div>

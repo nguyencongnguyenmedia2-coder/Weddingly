@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
 import { GuestService } from "@/services/guest.service";
 import { Guest, WeddingTable } from "@/types/database";
+import { LockedFeatureGuard } from "@/components/common/locked-feature-guard";
 
 export default function TablesPage() {
   const [tables, setTables] = React.useState<WeddingTable[]>([]);
@@ -101,8 +102,12 @@ export default function TablesPage() {
   const totalSeated = guests.filter((g) => g.table_id).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
+    <LockedFeatureGuard
+      featureName="Sơ Đồ Bàn Tiệc & Xếp Chỗ Thông Minh"
+      description="Công cụ sắp xếp bàn tiệc 2D, phân bổ chỗ ngồi cho từng vị khách và quản lý sức chứa sảnh cưới chuyên nghiệp."
+    >
+      <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
@@ -366,5 +371,6 @@ export default function TablesPage() {
         </form>
       </Modal>
     </div>
+    </LockedFeatureGuard>
   );
 }

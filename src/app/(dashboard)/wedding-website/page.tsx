@@ -57,6 +57,8 @@ import {
   defaultWebsiteConfig,
 } from "@/lib/wedding-store";
 import { Wedding } from "@/types/database";
+import { AuthService } from "@/services/auth.service";
+import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
 
 export default function WeddingWebsiteBuilderPage() {
   const [wedding, setWedding] = React.useState<Wedding | null>(null);
@@ -70,6 +72,11 @@ export default function WeddingWebsiteBuilderPage() {
   const [copied, setCopied] = React.useState(false);
   const [savedSuccess, setSavedSuccess] = React.useState(false);
 
+  // Subscription plan states
+  const [userPlan, setUserPlan] = React.useState<"FREE" | "PRO">("FREE");
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
+
   // Milestone modal
   const [isAddMilestoneOpen, setIsAddMilestoneOpen] = React.useState(false);
   const [newMilestoneYear, setNewMilestoneYear] = React.useState("");
@@ -78,6 +85,10 @@ export default function WeddingWebsiteBuilderPage() {
   const [newMilestoneImg, setNewMilestoneImg] = React.useState("");
 
   const loadData = React.useCallback(() => {
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setUserPlan(user.plan || "FREE");
+    }
     setWedding(WeddingStore.getWedding());
     setConfig(WeddingStore.getWebsiteConfig());
   }, []);
@@ -560,19 +571,33 @@ export default function WeddingWebsiteBuilderPage() {
             </button>
 
             <button
-              onClick={() => setActiveTab("motion")}
-              className={`relative flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all ${
+              onClick={() => {
+                if (userPlan !== "PRO") {
+                  setUpgradeReason(
+                    "Bộ hiệu ứng Chuyển động Motion VIP cao cấp là tiện ích độc quyền của Gói Hoàn Mỹ (PRO VIP). Nâng cấp ngay để mở khóa toàn bộ hiệu ứng sinh động!"
+                  );
+                  setIsUpgradeModalOpen(true);
+                  return;
+                }
+                setActiveTab("motion");
+              }}
+              className={`relative flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 activeTab === "motion"
                   ? "bg-gradient-to-r from-[#8B5E5A] to-[#734A46] text-white shadow-sm"
                   : "text-[#6B5E5B] hover:bg-[#F5EFE7] dark:text-[#A69591] dark:hover:bg-[#2A2321]"
               }`}
+              title={userPlan !== "PRO" ? "Tính năng Motion VIP (Đang bị khóa)" : undefined}
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
               <span>Chuyển động</span>
-              <span className="absolute -top-1 -right-0.5 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
+              {userPlan !== "PRO" ? (
+                <Lock className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
+              ) : (
+                <span className="absolute -top-1 -right-0.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+              )}
             </button>
 
             <button
@@ -2396,6 +2421,12 @@ export default function WeddingWebsiteBuilderPage() {
           );
         })()}
       </Modal>
+
+      <UpgradePlanModal
+        open={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+        reason={upgradeReason}
+      />
     </div>
   );
 }

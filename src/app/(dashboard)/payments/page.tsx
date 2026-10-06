@@ -18,6 +18,7 @@ import { formatCurrencyVND } from "@/lib/utils";
 import { BudgetService } from "@/services/budget.service";
 import { VendorService } from "@/services/vendor.service";
 import { Payment, PaymentStatus, Vendor } from "@/types/database";
+import { LockedFeatureGuard } from "@/components/common/locked-feature-guard";
 
 export default function PaymentsPage() {
   const [payments, setPayments] = React.useState<Payment[]>([]);
@@ -115,8 +116,12 @@ export default function PaymentsPage() {
   const totalOutstanding = payments.reduce((sum, p) => sum + Number(p.remaining_amount), 0);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
+    <LockedFeatureGuard
+      featureName="Lịch trình & Đợt Thanh Toán"
+      description="Quản lý tiến độ đặt cọc, theo dõi các mốc thanh toán hợp đồng nhà cung cấp và nhắc hạn nợ tự động."
+    >
+      <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
@@ -423,5 +428,6 @@ export default function PaymentsPage() {
         </form>
       </Modal>
     </div>
+    </LockedFeatureGuard>
   );
 }
