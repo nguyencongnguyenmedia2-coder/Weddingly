@@ -247,7 +247,7 @@ CREATE TABLE IF NOT EXISTS public.wedding_websites (
 -- 16. INVITATIONS
 CREATE TABLE IF NOT EXISTS public.invitations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wedding_id REFERENCES public.weddings(id) ON DELETE CASCADE NOT NULL,
+    wedding_id UUID REFERENCES public.weddings(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
     template TEXT DEFAULT 'Luxury',
     parents_info JSONB DEFAULT '{}'::jsonb,
@@ -291,19 +291,50 @@ ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- CẤP QUYỀN ĐỌC GHI CHO ANON VÀ AUTHENTICATED THÔNG QUA PUBLISHABLE KEY
+DROP POLICY IF EXISTS "Allow public all access on weddings" ON public.weddings;
 CREATE POLICY "Allow public all access on weddings" ON public.weddings FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on wedding_members" ON public.wedding_members;
 CREATE POLICY "Allow public all access on wedding_members" ON public.wedding_members FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on wedding_settings" ON public.wedding_settings;
 CREATE POLICY "Allow public all access on wedding_settings" ON public.wedding_settings FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on budget_categories" ON public.budget_categories;
 CREATE POLICY "Allow public all access on budget_categories" ON public.budget_categories FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on expenses" ON public.expenses;
 CREATE POLICY "Allow public all access on expenses" ON public.expenses FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on payments" ON public.payments;
 CREATE POLICY "Allow public all access on payments" ON public.payments FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on wedding_tables" ON public.wedding_tables;
 CREATE POLICY "Allow public all access on wedding_tables" ON public.wedding_tables FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on guests" ON public.guests;
 CREATE POLICY "Allow public all access on guests" ON public.guests FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on guest_rsvps" ON public.guest_rsvps;
 CREATE POLICY "Allow public all access on guest_rsvps" ON public.guest_rsvps FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on tasks" ON public.tasks;
 CREATE POLICY "Allow public all access on tasks" ON public.tasks FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on timeline_events" ON public.timeline_events;
 CREATE POLICY "Allow public all access on timeline_events" ON public.timeline_events FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on vendors" ON public.vendors;
 CREATE POLICY "Allow public all access on vendors" ON public.vendors FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on notes" ON public.notes;
 CREATE POLICY "Allow public all access on notes" ON public.notes FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on wedding_websites" ON public.wedding_websites;
 CREATE POLICY "Allow public all access on wedding_websites" ON public.wedding_websites FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on invitations" ON public.invitations;
 CREATE POLICY "Allow public all access on invitations" ON public.invitations FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all access on notifications" ON public.notifications;
 CREATE POLICY "Allow public all access on notifications" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
