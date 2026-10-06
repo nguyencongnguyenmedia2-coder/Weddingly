@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import * as React from "react";
 import {
   LayoutDashboard,
   CheckSquare,
@@ -24,8 +25,11 @@ import {
   BarChart3,
   Bot,
   ShieldAlert,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AuthService, AuthUser } from "@/services/auth.service";
+import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
 
 interface NavGroup {
   title: string;
@@ -79,6 +83,25 @@ const navGroups: NavGroup[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
+  const [isUpgradeOpen, setIsUpgradeOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const syncUser = () => {
+      setCurrentUser(AuthService.getCurrentUser());
+    };
+    syncUser();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("weddingly_auth_changed", syncUser);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("weddingly_auth_changed", syncUser);
+      }
+    };
+  }, []);
 
   const handleOpenEmma = () => {
     if (typeof window !== "undefined") {
@@ -170,6 +193,42 @@ export function Sidebar() {
         </div>
       </nav>
 
+      {/* Subscription Plan Card */}
+      {currentUser?.plan === "PRO" ? (
+        <div className="mx-3 p-3 rounded-[14px] bg-gradient-to-br from-amber-500/10 via-yellow-500/10 to-amber-500/5 border border-amber-400/40 dark:border-amber-500/30">
+          <div className="flex items-center gap-2">
+            <div className="p-1 rounded-md bg-amber-500 text-white shadow-xs">
+              <Crown className="h-3.5 w-3.5 fill-current" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-amber-900 dark:text-amber-200">Gói Hoàn Mỹ (PRO VIP)</p>
+              <p className="text-[9px] text-amber-700/80 dark:text-amber-300/80">Không giới hạn mọi tính năng</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mx-3 p-3 rounded-[14px] bg-gradient-to-br from-[#FFFDF9] to-[#F5EFE7] border border-[#D6BE91]/60 dark:from-[#221C1B] dark:to-[#1C1716] shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8B5E5A] dark:text-[#D6BE91]">
+              Gói Miễn Phí
+            </span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#8B5E5A]/10 text-[#8B5E5A] dark:text-[#D6BE91] font-semibold">
+              Giới hạn 50 khách
+            </span>
+          </div>
+          <p className="text-[10px] text-[#6B5E5B] dark:text-[#A69591] mb-2 leading-relaxed">
+            Mở khoá không giới hạn khách mời, quản lý chi phí & AI trợ lý.
+          </p>
+          <button
+            onClick={() => setIsUpgradeOpen(true)}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-[8px] bg-gradient-to-r from-[#8B5E5A] to-[#6A4643] text-white text-[11px] font-bold shadow-xs hover:brightness-105 transition-all cursor-pointer"
+          >
+            <Crown className="h-3.5 w-3.5 text-[#D6BE91]" />
+            <span>Nâng cấp PRO VIP</span>
+          </button>
+        </div>
+      )}
+
       {/* Emma AI Clickable Card */}
       <div
         onClick={handleOpenEmma}
@@ -190,6 +249,12 @@ export function Sidebar() {
           Tư vấn ngân sách, kịch bản nghi lễ và đề xuất tối ưu chi phí 24/7.
         </p>
       </div>
+
+      <UpgradePlanModal
+        open={isUpgradeOpen}
+        onOpenChange={setIsUpgradeOpen}
+        reason="Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để trải nghiệm toàn bộ tiện ích quản lý đám cưới không giới hạn."
+      />
     </aside>
   );
 }

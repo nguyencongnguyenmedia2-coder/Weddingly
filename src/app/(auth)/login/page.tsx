@@ -8,24 +8,42 @@ import { Heart, ArrowRight, Lock, Mail } from "lucide-react";
 import { Card, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { AuthService } from "@/services/auth.service";
+
+function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = React.useState("minhanh@wedding.vn");
-  const [password, setPassword] = React.useState("password123");
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/dashboard";
+  const notice = searchParams.get("notice");
+
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Authenticate and redirect to dashboard
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 600);
+    setErrorMsg(null);
+    try {
+      await AuthService.login(email, password);
+      router.push(redirect);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFDF9] via-[#F5EFE7] to-[#FFFDF9] p-4">
       <div className="w-full max-w-md space-y-6">
+        {notice === "require_auth" && (
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-center shadow-xs">
+            🔒 <strong>Yêu cầu đăng nhập:</strong> Vui lòng đăng nhập hoặc tạo tài khoản mới để truy cập không gian quản lý đám cưới của bạn.
+          </div>
+        )}
         {/* Header */}
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex flex-col items-center gap-2 group">
@@ -122,5 +140,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FFFDF9]">Đang tải...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

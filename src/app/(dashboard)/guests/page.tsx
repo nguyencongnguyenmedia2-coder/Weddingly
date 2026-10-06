@@ -19,12 +19,17 @@ import {
   Edit2,
   Trash2,
   Armchair,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { Card, Badge, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
 import { GuestService, GuestStats } from "@/services/guest.service";
 import { Guest, RSVPStatus, GuestSide, WeddingTable } from "@/types/database";
+import { AuthService } from "@/services/auth.service";
+import { TierService } from "@/services/tier.service";
+import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
 
 export default function GuestsPage() {
   const [guests, setGuests] = React.useState<Guest[]>([]);
@@ -38,6 +43,11 @@ export default function GuestsPage() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [editingGuest, setEditingGuest] = React.useState<Guest | null>(null);
+
+  // Subscription plan & quota states
+  const [userPlan, setUserPlan] = React.useState<"FREE" | "PRO">("FREE");
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
 
   // Form state
   const [name, setName] = React.useState("");
@@ -53,6 +63,10 @@ export default function GuestsPage() {
   const [notes, setNotes] = React.useState("");
 
   const loadData = React.useCallback(async () => {
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setUserPlan(user.plan || "FREE");
+    }
     const list = await GuestService.getGuests();
     setGuests(list);
     const s = await GuestService.getGuestStats();
@@ -77,6 +91,15 @@ export default function GuestsPage() {
   };
 
   const handleOpenAdd = () => {
+    const user = AuthService.getCurrentUser();
+    const plan = user?.plan || userPlan || "FREE";
+    const quotaCheck = TierService.canAddGuest(guests.length, plan);
+    if (!quotaCheck.allowed) {
+      setUpgradeReason(quotaCheck.message);
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+
     setName("");
     setPhone("");
     setEmail("");
@@ -194,9 +217,30 @@ export default function GuestsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
-            Danh sách Khách mời & Điểm danh (RSVP)
-          </h1>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
+              Danh sách Khách mời & Điểm danh (RSVP)
+            </h1>
+            {userPlan === "PRO" ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/40 text-amber-700 dark:text-amber-300 text-[10px] font-bold shadow-xs">
+                <Crown className="h-3 w-3 text-amber-500 fill-amber-500" />
+                <span>PRO VIP (Không giới hạn)</span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setUpgradeReason("Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để không giới hạn danh sách khách mời và bàn tiệc.");
+                  setIsUpgradeModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#8B5E5A]/10 border border-[#8B5E5A]/30 text-[#8B5E5A] dark:text-[#D6BE91] text-[10px] font-semibold hover:bg-[#8B5E5A]/20 transition-all cursor-pointer"
+                title="Bấm để mở khoá không giới hạn khách mời"
+              >
+                <span>{guests.length}/50 khách (Miễn phí)</span>
+                <span className="underline ml-0.5">Nâng cấp PRO &rarr;</span>
+              </button>
+            )}
+          </div>
           <p className="text-xs text-[#6B5E5B] dark:text-[#A69591] mt-1">
             Chỉnh sửa thông tin khách, phân bàn tiệc, xuất CSV và cấp link RSVP cá nhân
           </p>
@@ -674,6 +718,12 @@ export default function GuestsPage() {
           </div>
         </form>
       </Modal>
+
+      <UpgradePlanModal
+        open={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+        reason={upgradeReason}
+      />
     </div>
   );
 }

@@ -14,6 +14,7 @@ export type RSVPStatus = "PENDING" | "CONFIRMED" | "DECLINED";
 export type PaymentStatus = "PENDING" | "PARTIAL" | "PAID" | "OVERDUE";
 export type VendorStatus = "INQUIRY" | "CONTACTED" | "QUOTED" | "BOOKED" | "DECLINED";
 export type GuestSide = "BRIDE" | "GROOM" | "BOTH";
+export type SubscriptionPlan = "FREE" | "PRO";
 
 export interface Profile {
   id: string;
@@ -23,6 +24,8 @@ export interface Profile {
   phone: string | null;
   role: "USER" | "PLANNER" | "ADMIN";
   locale: string;
+  plan?: SubscriptionPlan;
+  plan_expires_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +44,7 @@ export interface Wedding {
   status: "PLANNING" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
   owner_id: string;
   cover_image_url: string | null;
+  plan?: SubscriptionPlan;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

@@ -12,37 +12,39 @@ export async function middleware(request: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // If Supabase keys are not configured or using default mock in dev, allow smooth browsing
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes("mock-wedding")) {
-      return response;
+    let user = null;
+    if (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes("mock-wedding")) {
+      try {
+        const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value }) =>
+                request.cookies.set(name, value)
+              );
+              response = NextResponse.next({
+                request,
+              });
+              cookiesToSet.forEach(({ name, value, options }) =>
+                response.cookies.set(name, value, options)
+              );
+            },
+          },
+        });
+        const res = await supabase.auth.getUser();
+        user = res.data?.user;
+      } catch (e) {
+        // Fallback to cookie
+      }
     }
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    });
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     const pathname = request.nextUrl.pathname;
+    const sessionCookie = request.cookies.get("weddingly_session");
+    const isAuthenticated = Boolean(user || sessionCookie?.value);
 
-    // Protected paths
+    // Protected paths (Requires mandatory registration / login)
     const isProtectedPath =
       pathname.startsWith("/dashboard") ||
       pathname.startsWith("/tasks") ||
@@ -63,9 +65,11 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/analytics") ||
       pathname.startsWith("/admin");
 
-    if (isProtectedPath && !user) {
-      // In development or if user is browsing without session, allow preview
-      return response;
+    if (isProtectedPath && !isAuthenticated) {
+      const redirectUrl = new URL("/login", request.url);
+      redirectUrl.searchParams.set("redirect", pathname);
+      redirectUrl.searchParams.set("notice", "require_auth");
+      return NextResponse.redirect(redirectUrl);
     }
 
     // Auth paths when already logged in
@@ -74,7 +78,7 @@ export async function middleware(request: NextRequest) {
       pathname === "/register" ||
       pathname === "/forgot-password";
 
-    if (isAuthPath && user) {
+    if (isAuthPath && isAuthenticated) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 

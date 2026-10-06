@@ -13,6 +13,8 @@ import {
   Upload,
   Image as ImageIcon,
   CheckCircle2,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { Card, Badge, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,9 @@ import { formatCurrencyVND } from "@/lib/utils";
 import { BudgetService } from "@/services/budget.service";
 import { VendorService } from "@/services/vendor.service";
 import { Expense, PaymentStatus, Vendor } from "@/types/database";
+import { AuthService } from "@/services/auth.service";
+import { TierService } from "@/services/tier.service";
+import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = React.useState<Expense[]>([]);
@@ -31,6 +36,11 @@ export default function ExpensesPage() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [editingExpense, setEditingExpense] = React.useState<Expense | null>(null);
+
+  // Subscription plan & quota states
+  const [userPlan, setUserPlan] = React.useState<"FREE" | "PRO">("FREE");
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
 
   // Form state
   const [title, setTitle] = React.useState("");
@@ -43,6 +53,10 @@ export default function ExpensesPage() {
   const [notes, setNotes] = React.useState("");
 
   const loadData = React.useCallback(async () => {
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setUserPlan(user.plan || "FREE");
+    }
     const list = await BudgetService.getExpenses();
     setExpenses(list);
     const vList = await VendorService.getVendors();
@@ -65,6 +79,15 @@ export default function ExpensesPage() {
   };
 
   const handleOpenAdd = () => {
+    const user = AuthService.getCurrentUser();
+    const plan = user?.plan || userPlan || "FREE";
+    const quotaCheck = TierService.canAddExpense(expenses.length, plan);
+    if (!quotaCheck.allowed) {
+      setUpgradeReason(quotaCheck.message);
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+
     setTitle("");
     setCategoryName("Địa điểm & Tiệc cưới");
     setAmount("");
@@ -149,9 +172,30 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
-            Sổ chi tiêu thực tế (Expense Tracker)
-          </h1>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="font-serif text-2xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
+              Sổ chi tiêu thực tế (Expense Tracker)
+            </h1>
+            {userPlan === "PRO" ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/40 text-amber-700 dark:text-amber-300 text-[10px] font-bold shadow-xs">
+                <Crown className="h-3 w-3 text-amber-500 fill-amber-500" />
+                <span>PRO VIP (Không giới hạn)</span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setUpgradeReason("Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để không giới hạn ghi nhận chi tiêu và xuất báo cáo tài chính.");
+                  setIsUpgradeModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#8B5E5A]/10 border border-[#8B5E5A]/30 text-[#8B5E5A] dark:text-[#D6BE91] text-[10px] font-semibold hover:bg-[#8B5E5A]/20 transition-all cursor-pointer"
+                title="Bấm để mở khoá không giới hạn chi tiêu"
+              >
+                <span>{expenses.length}/15 khoản chi (Miễn phí)</span>
+                <span className="underline ml-0.5">Nâng cấp PRO &rarr;</span>
+              </button>
+            )}
+          </div>
           <p className="text-xs text-[#6B5E5B] dark:text-[#A69591] mt-1">
             Ghi chép, chỉnh sửa, đính kèm hóa đơn và đối soát từng khoản tiền đám cưới
           </p>
@@ -532,6 +576,12 @@ export default function ExpensesPage() {
           </div>
         </form>
       </Modal>
+
+      <UpgradePlanModal
+        open={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+        reason={upgradeReason}
+      />
     </div>
   );
 }

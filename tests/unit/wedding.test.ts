@@ -202,4 +202,26 @@ describe("Wedding Planner Pro - Unit & Business Logic Tests", () => {
       expect(guestsAfter.some((g) => g.id === guest.id)).toBe(false);
     });
   });
+
+  describe("Subscription Plan & Quotas (Free vs Pro)", () => {
+    it("should allow up to 50 guests on FREE and block above 50", async () => {
+      const { TierService } = await import("@/services/tier.service");
+      expect(TierService.canAddGuest(49, "FREE").allowed).toBe(true);
+      expect(TierService.canAddGuest(50, "FREE").allowed).toBe(false);
+      expect(TierService.canAddGuest(50, "FREE").message).toContain("Gói Miễn Phí");
+    });
+
+    it("should allow unlimited guests on PRO plan", async () => {
+      const { TierService } = await import("@/services/tier.service");
+      expect(TierService.canAddGuest(50, "PRO").allowed).toBe(true);
+      expect(TierService.canAddGuest(500, "PRO").allowed).toBe(true);
+    });
+
+    it("should enforce expense quota limit for FREE and unlimited for PRO", async () => {
+      const { TierService } = await import("@/services/tier.service");
+      expect(TierService.canAddExpense(14, "FREE").allowed).toBe(true);
+      expect(TierService.canAddExpense(15, "FREE").allowed).toBe(false);
+      expect(TierService.canAddExpense(100, "PRO").allowed).toBe(true);
+    });
+  });
 });

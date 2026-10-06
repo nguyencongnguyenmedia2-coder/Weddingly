@@ -16,11 +16,14 @@ import {
   Moon,
   Bot,
   Trash2,
+  Crown,
 } from "lucide-react";
 import { Wedding } from "@/types/database";
 import { initialSeedWedding } from "@/lib/mock-data";
 import { WeddingService } from "@/services/wedding.service";
 import { WeddingStore } from "@/lib/wedding-store";
+import { AuthService, AuthUser } from "@/services/auth.service";
+import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
 
 export function Header({
   onOpenSearch,
@@ -31,12 +34,23 @@ export function Header({
   const [wedding, setWedding] = React.useState<Wedding>(initialSeedWedding);
   const [weddings, setWeddings] = React.useState<Wedding[]>([initialSeedWedding]);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
+  const [isUpgradeOpen, setIsUpgradeOpen] = React.useState(false);
 
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   React.useEffect(() => {
     WeddingService.getActiveWedding().then(setWedding);
     WeddingService.getUserWeddings().then(setWeddings);
+
+    const syncUser = () => {
+      setCurrentUser(AuthService.getCurrentUser());
+    };
+    syncUser();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("weddingly_auth_changed", syncUser);
+    }
 
     // Sync dark mode preference
     if (typeof window !== "undefined") {
@@ -47,6 +61,12 @@ export function Header({
         document.documentElement.classList.add("dark");
       }
     }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("weddingly_auth_changed", syncUser);
+      }
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -194,26 +214,57 @@ export function Header({
           </span>
         </Link>
 
+        {/* Plan Upgrade / Status */}
+        {currentUser?.plan === "PRO" ? (
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-yellow-500/20 border border-amber-400/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold shadow-xs">
+            <Crown className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+            <span>PRO VIP</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsUpgradeOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-[#8B5E5A] to-[#6A4643] text-white text-[11px] font-semibold hover:shadow-md hover:brightness-110 transition-all cursor-pointer"
+            title="Nâng cấp lên gói Hoàn Mỹ PRO"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-[#D6BE91]" />
+            <span className="hidden sm:inline">Nâng cấp PRO</span>
+            <span className="sm:hidden">PRO</span>
+          </button>
+        )}
+
         {/* User Profile */}
         <div className="flex items-center gap-2 pl-1.5 sm:pl-2.5 border-l border-[#EADBCE] dark:border-[#3A302E]">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-[#D6BE91] text-[#2C2422] font-serif font-bold text-xs shadow-sm shrink-0">
-            MA
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-[#D6BE91] text-[#2C2422] font-serif font-bold text-xs shadow-sm shrink-0 uppercase">
+            {currentUser?.full_name
+              ? currentUser.full_name.split(" ").slice(-2).map((n) => n[0]).join("")
+              : "KH"}
           </div>
-          <div className="hidden sm:block text-left">
-            <p className="text-xs font-semibold text-[#2C2422] dark:text-[#F5EFE7] leading-none">
-              Minh Anh
+          <div className="hidden sm:block text-left max-w-[120px]">
+            <p className="text-xs font-semibold text-[#2C2422] dark:text-[#F5EFE7] leading-none truncate">
+              {currentUser?.full_name || wedding.bride_name || "Khách hàng"}
             </p>
-            <p className="text-[10px] text-[#8B5E5A] mt-0.5 font-medium">Cô dâu (Owner)</p>
+            <p className="text-[10px] text-[#8B5E5A] dark:text-[#D6BE91] mt-0.5 font-medium flex items-center gap-1">
+              {currentUser?.plan === "PRO" ? "Gói Hoàn Mỹ" : "Gói Miễn Phí"}
+            </p>
           </div>
-          <Link
-            href="/login"
+          <button
+            onClick={async () => {
+              await AuthService.logout();
+              router.push("/login");
+            }}
             title="Đăng xuất"
-            className="p-1.5 text-[#A69591] hover:text-[#B44A4A] transition-colors"
+            className="p-1.5 text-[#A69591] hover:text-[#B44A4A] transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
-          </Link>
+          </button>
         </div>
       </div>
+
+      <UpgradePlanModal
+        open={isUpgradeOpen}
+        onOpenChange={setIsUpgradeOpen}
+        reason="Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để không giới hạn khách mời, quản lý chi tiêu và sử dụng đầy đủ các tính năng độc quyền."
+      />
     </header>
   );
 }
