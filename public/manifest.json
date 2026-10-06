@@ -1,0 +1,26 @@
+{
+  "name": "Weddingly - Cưới thông minh, Tài chính an tâm",
+  "short_name": "Weddingly",
+  "description": "Nền tảng quản lý đám cưới thông minh toàn diện cho các cặp đôi Việt Nam",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FFFDF9",
+  "theme_color": "#8B5E5A",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

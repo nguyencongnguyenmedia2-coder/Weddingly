@@ -1,26 +1,452 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Font Families */
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Wedding Luxury Color Tokens */
+    --ivory: #FFFDF9;
+    --warm-beige: #F5EFE7;
+    --champagne: #D6BE91;
+    --champagne-light: #F2E9DC;
+    --champagne-dark: #B89E6C;
+    --rose-brown: #8B5E5A;
+    --rose-brown-light: #B48B87;
+    --dark-brown: #2C2422;
+    --dark-brown-soft: #423633;
+    
+    /* Semantic Status */
+    --success: #3F7D5A;
+    --success-light: #EBF5F0;
+    --warning: #C68A27;
+    --warning-light: #FEF8EC;
+    --danger: #B44A4A;
+    --danger-light: #FDF2F2;
+
+    /* Base Variables */
+    --background: #FFFDF9;
+    --foreground: #2C2422;
+    --card: #FFFFFF;
+    --card-foreground: #2C2422;
+    --popover: #FFFFFF;
+    --popover-foreground: #2C2422;
+    --primary: #8B5E5A;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F5EFE7;
+    --secondary-foreground: #2C2422;
+    --muted: #F8F5F0;
+    --muted-foreground: #6B5E5B;
+    --accent: #D6BE91;
+    --accent-foreground: #2C2422;
+    --border: #EADBCE;
+    --input: #EADBCE;
+    --ring: #D6BE91;
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    /* Luxury Shadows */
+    --shadow-soft: 0 4px 20px -2px rgba(44, 36, 34, 0.05);
+    --shadow-card: 0 8px 30px -4px rgba(44, 36, 34, 0.06);
+    --shadow-dropdown: 0 12px 40px -6px rgba(44, 36, 34, 0.12);
+  }
+
+  .dark {
+    --background: #181413;
+    --foreground: #F5EFE7;
+    --card: #221C1B;
+    --card-foreground: #F5EFE7;
+    --popover: #221C1B;
+    --popover-foreground: #F5EFE7;
+    --primary: #D6BE91;
+    --primary-foreground: #2C2422;
+    --secondary: #2C2422;
+    --secondary-foreground: #F5EFE7;
+    --muted: #2A2321;
+    --muted-foreground: #A69591;
+    --accent: #B89E6C;
+    --accent-foreground: #FFFFFF;
+    --border: #3A302E;
+    --input: #3A302E;
+    --ring: #D6BE91;
+
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+    --shadow-card: 0 8px 30px -4px rgba(0, 0, 0, 0.45);
+    --shadow-dropdown: 0 12px 40px -6px rgba(0, 0, 0, 0.6);
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-heading), serif;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D6BE91;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B89E6C;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 253, 249, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(214, 190, 145, 0.25);
+}
+
+.dark .glass {
+  background: rgba(34, 28, 27, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(214, 190, 145, 0.15);
+}
+
+/* Luxury card glow */
+.card-luxury {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.25s ease-in-out;
+}
+.card-luxury:hover {
+  box-shadow: var(--shadow-card);
+  border-color: var(--champagne);
+}
+
+/* Luxury Studio Canvas & Bezels */
+.studio-canvas-backdrop {
+  background-color: #FAF7F2;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(214, 190, 145, 0.25) 0%, transparent 60%),
+    radial-gradient(#D6BE91 0.75px, transparent 0.75px);
+  background-size: 100% 100%, 20px 20px;
+}
+
+.dark .studio-canvas-backdrop {
+  background-color: #151110;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(214, 190, 145, 0.15) 0%, transparent 60%),
+    radial-gradient(rgba(214, 190, 145, 0.15) 0.75px, transparent 0.75px);
+  background-size: 100% 100%, 20px 20px;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #B89E6C 0%, #D6BE91 50%, #8B5E5A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-foil-badge {
+  background: linear-gradient(135deg, rgba(214, 190, 145, 0.2) 0%, rgba(242, 233, 220, 0.6) 100%);
+  border: 1px solid rgba(214, 190, 145, 0.5);
+  box-shadow: 0 2px 10px rgba(214, 190, 145, 0.15);
+}
+
+/* iPhone Titanium Chassis */
+.iphone-titanium-frame {
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 0 4px #262120,
+    0 25px 60px -15px rgba(44, 36, 34, 0.4),
+    0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Macbook Pro Chassis */
+.macbook-chassis-frame {
+  box-shadow:
+    0 0 0 1px rgba(214, 190, 145, 0.3),
+    0 25px 65px -12px rgba(44, 36, 34, 0.25),
+    0 8px 20px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================================
+   WEDDING WEBSITE STUDIO - IMAGE MOTION & ANIMATION EFFECTS
+   ======================================================== */
+
+/* Speed variables */
+.motion-speed-slow {
+  --motion-hero-duration: 22s;
+  --motion-couple-duration: 4s;
+  --motion-gallery-duration: 16s;
+  --motion-float-duration: 6s;
+}
+
+.motion-speed-normal {
+  --motion-hero-duration: 12s;
+  --motion-couple-duration: 2.5s;
+  --motion-gallery-duration: 9s;
+  --motion-float-duration: 4s;
+}
+
+.motion-speed-dynamic {
+  --motion-hero-duration: 6s;
+  --motion-couple-duration: 1.5s;
+  --motion-gallery-duration: 5s;
+  --motion-float-duration: 2.5s;
+}
+
+/* 1. Hero Cover Background Keyframes */
+@keyframes kenburns-slow {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.14) translate3d(-1.5%, -1.2%, 0);
+  }
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pan-horizontal {
+  0% {
+    transform: scale(1.1) translate3d(-2.5%, 0, 0);
+  }
+  50% {
+    transform: scale(1.1) translate3d(2.5%, 0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate3d(-2.5%, 0, 0);
+  }
+}
+
+@keyframes pulse-zoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes float-tilt {
+  0%, 100% {
+    transform: scale(1.04) rotate(0deg) translate3d(0, 0, 0);
+  }
+  33% {
+    transform: scale(1.09) rotate(0.8deg) translate3d(-1%, -1%, 0);
+  }
+  66% {
+    transform: scale(1.06) rotate(-0.8deg) translate3d(1%, 0.8%, 0);
+  }
+}
+
+/* Hero Motion Classes */
+.motion-hero-kenburns {
+  animation: kenburns-slow var(--motion-hero-duration, 12s) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.motion-hero-pan {
+  animation: pan-horizontal var(--motion-hero-duration, 12s) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.motion-hero-pulse {
+  animation: pulse-zoom var(--motion-hero-duration, 12s) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.motion-hero-float-tilt {
+  animation: float-tilt var(--motion-hero-duration, 12s) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* 2. Couple Avatar Keyframes & Classes */
+@keyframes pulse-ring-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(214, 190, 145, 0.7), 0 0 16px rgba(214, 190, 145, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(214, 190, 145, 0), 0 0 30px rgba(214, 190, 145, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(214, 190, 145, 0), 0 0 0 rgba(214, 190, 145, 0);
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes float-gentle-reverse {
+  0%, 100% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow-rotate {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(214, 190, 145, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(214, 190, 145, 0.85));
+  }
+}
+
+.motion-couple-ring {
+  animation: pulse-ring-glow var(--motion-couple-duration, 2.5s) infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.motion-couple-float-1 {
+  animation: float-gentle var(--motion-float-duration, 4s) ease-in-out infinite;
+}
+
+.motion-couple-float-2 {
+  animation: float-gentle-reverse var(--motion-float-duration, 4s) ease-in-out infinite;
+}
+
+.motion-couple-glow {
+  animation: glow-rotate var(--motion-couple-duration, 2.5s) ease-in-out infinite;
+}
+
+/* 3. Gallery & Album Photos */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-25deg);
+  }
+}
+
+@keyframes gallery-kenburns-a {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.1) translate3d(-2%, -1%, 0);
+  }
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+@keyframes gallery-kenburns-b {
+  0% {
+    transform: scale(1.1) translate3d(1%, 2%, 0);
+  }
+  50% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate3d(1%, 2%, 0);
+  }
+}
+
+@keyframes gallery-float-odd {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes gallery-float-even {
+  0%, 100% {
+    transform: translateY(-7px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+
+.motion-gallery-kenburns-odd {
+  animation: gallery-kenburns-a var(--motion-gallery-duration, 9s) ease-in-out infinite alternate;
+}
+
+.motion-gallery-kenburns-even {
+  animation: gallery-kenburns-b var(--motion-gallery-duration, 9s) ease-in-out infinite alternate;
+}
+
+.motion-gallery-float-odd {
+  animation: gallery-float-odd var(--motion-float-duration, 4s) ease-in-out infinite;
+}
+
+.motion-gallery-float-even {
+  animation: gallery-float-even var(--motion-float-duration, 4s) ease-in-out infinite;
+}
+
+.motion-gallery-zoom-glow {
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.motion-gallery-zoom-glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 16px 36px -6px rgba(214, 190, 145, 0.4), 0 0 20px 2px rgba(214, 190, 145, 0.3);
+  z-index: 10;
+}
+
+.motion-gallery-tilt {
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease;
+  perspective: 1000px;
+}
+.motion-gallery-tilt:hover {
+  transform: perspective(1000px) rotateX(4deg) rotateY(-4deg) translateY(-8px) scale(1.04);
+  box-shadow: 0 20px 35px -8px rgba(44, 36, 34, 0.25);
+  z-index: 10;
+}
+
+/* Shimmer Light Beam Effect on Hover */
+.image-shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+.image-shimmer-effect::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-150%) skewX(-25deg);
+  transition: opacity 0.2s;
+  z-index: 5;
+}
+.image-shimmer-effect:hover::after {
+  opacity: 1;
+  animation: shimmer-sweep 1.2s ease-in-out infinite;
+}
+
