@@ -29,6 +29,8 @@ export type {
   TimelineEvent,
 };
 
+import { createClient } from "@/lib/supabase/client";
+
 import {
   initialSeedWedding,
   initialSeedCategories,
@@ -303,102 +305,42 @@ interface WeddingState {
 
 const STORAGE_KEY = "wedding_planner_pro_state_v1";
 
-const initialPhotos: GalleryPhoto[] = [
-  {
-    id: "p1",
-    album: "Pre-wedding",
-    url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
-    caption: "Hoàng hôn lãng mạn tại Đà Lạt",
-    isFavorite: true,
-    uploadedAt: new Date().toISOString(),
-  },
-  {
-    id: "p2",
-    album: "Pre-wedding",
-    url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
-    caption: "Concept váy cưới công chúa cổ điển",
-    isFavorite: true,
-    uploadedAt: new Date().toISOString(),
-  },
-  {
-    id: "p3",
-    album: "Engagement",
-    url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80",
-    caption: "Lễ ăn hỏi ấm cúng cùng gia đình",
-    isFavorite: false,
-    uploadedAt: new Date().toISOString(),
-  },
-  {
-    id: "p4",
-    album: "Wedding",
-    url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80",
-    caption: "Khoảnh khắc trao nhẫn thiêng liêng",
-    isFavorite: true,
-    uploadedAt: new Date().toISOString(),
-  },
-];
-
-const initialNotes: NoteItem[] = [
-  {
-    id: "n1",
-    title: "Gợi ý bài hát mở màn và First Dance",
-    content: "Bài hát First Dance: 'Perfect' - Ed Sheeran hoặc 'Until I Found You' - Stephen Sanchez. Nhạc cắt bánh: 'A Thousand Years'.",
-    category: "Wedding day",
-    isPinned: true,
-    date: "2026-10-02",
-  },
-  {
-    id: "n2",
-    title: "Lưu ý gia đình hai bên khi đón dâu",
-    content: "Bác Năm dặn chuẩn bị đúng 7 tráp sơn mài đỏ, lễ ăn hỏi nhà gái có 6 người đón lễ. Xe hoa xuất phát lúc 7h15 sáng.",
-    category: "Family",
-    isPinned: true,
-    date: "2026-10-04",
-  },
-];
-
-const initialNotifications: NotificationItem[] = [
-  {
-    id: "nt1",
-    type: "RSVP",
-    title: "Khách mời xác nhận tham dự",
-    message: "Khách mời 'Vũ Phương Thảo' vừa xác nhận tham dự hôn lễ kèm 1 người lớn!",
-    isRead: false,
-    time: "15 phút trước",
-  },
-  {
-    id: "nt2",
-    type: "PAYMENT_DUE",
-    title: "Lịch thanh toán sắp đến hạn",
-    message: "Khoản đặt cọc đợt 2 sảnh tiệc Riverside Palace cần hoàn tất trước ngày cưới 1 tháng.",
-    isRead: false,
-    time: "2 giờ trước",
-  },
-];
+const initialPhotos: GalleryPhoto[] = [];
+const initialNotes: NoteItem[] = [];
+const initialNotifications: NotificationItem[] = [];
 
 function getInitialState(): WeddingState {
   if (typeof window !== "undefined") {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.wedding && parsed.tasks) {
-          if (!parsed.websiteConfig) {
-            parsed.websiteConfig = defaultWebsiteConfig;
-          } else if (!parsed.websiteConfig.imageMotion) {
-            parsed.websiteConfig.imageMotion = defaultWebsiteConfig.imageMotion;
+      // If legacy demo data flag is detected, clean up immediately
+      const isPurged = localStorage.getItem("weddingly_clean_v1");
+      if (!isPurged) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem("weddingly_clean_v1", "true");
+      } else {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // If stored contains old demo couple, purge it
+          if (parsed.wedding?.bride_name === "Nguyễn Minh Anh" || parsed.wedding?.id === "11111111-1111-1111-1111-111111111111") {
+            localStorage.removeItem(STORAGE_KEY);
+          } else if (parsed.wedding && parsed.tasks) {
+            if (!parsed.websiteConfig) {
+              parsed.websiteConfig = defaultWebsiteConfig;
+            } else if (!parsed.websiteConfig.imageMotion) {
+              parsed.websiteConfig.imageMotion = defaultWebsiteConfig.imageMotion;
+            }
+            if (Array.isArray(parsed.tasks)) {
+              parsed.tasks = parsed.tasks.filter((t: any) => !t.deleted_at);
+            }
+            if (Array.isArray(parsed.expenses)) {
+              parsed.expenses = parsed.expenses.filter((e: any) => !e.deleted_at);
+            }
+            if (Array.isArray(parsed.guests)) {
+              parsed.guests = parsed.guests.filter((g: any) => !g.deleted_at);
+            }
+            return parsed;
           }
-          // Filter out any legacy soft-deleted records
-          if (Array.isArray(parsed.tasks)) {
-            parsed.tasks = parsed.tasks.filter((t: any) => !t.deleted_at);
-          }
-          if (Array.isArray(parsed.expenses)) {
-            parsed.expenses = parsed.expenses.filter((e: any) => !e.deleted_at);
-          }
-          if (Array.isArray(parsed.guests)) {
-            parsed.guests = parsed.guests.filter((g: any) => !g.deleted_at);
-          }
-          return parsed;
         }
       }
     } catch (e) {
@@ -440,6 +382,56 @@ function persistState() {
 export const WeddingStore = {
   getState(): WeddingState {
     return currentState;
+  },
+
+  // Clear all demo data completely and reset to blank clean state
+  clearAllDemoData(): void {
+    currentState = {
+      wedding: initialSeedWedding,
+      allWeddings: [initialSeedWedding],
+      categories: initialSeedCategories,
+      expenses: [],
+      payments: [],
+      guests: [],
+      tables: [],
+      tasks: [],
+      vendors: [],
+      timeline: [],
+      photos: [],
+      notes: [],
+      notifications: [],
+      websiteConfig: defaultWebsiteConfig,
+    };
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem("weddingly_clean_v1", "true");
+    }
+    persistState();
+  },
+
+  // Sync state directly with remote Supabase database
+  async syncWithSupabase(): Promise<boolean> {
+    try {
+      const supabase = createClient();
+      const { data: weddings, error } = await supabase.from("weddings").select("*").limit(5);
+      if (!error && weddings && weddings.length > 0) {
+        currentState.wedding = weddings[0];
+        currentState.allWeddings = weddings;
+        const [tasksRes, expRes, gstRes] = await Promise.all([
+          supabase.from("tasks").select("*").eq("wedding_id", weddings[0].id),
+          supabase.from("expenses").select("*").eq("wedding_id", weddings[0].id),
+          supabase.from("guests").select("*").eq("wedding_id", weddings[0].id),
+        ]);
+        if (tasksRes.data) currentState.tasks = tasksRes.data;
+        if (expRes.data) currentState.expenses = expRes.data;
+        if (gstRes.data) currentState.guests = gstRes.data;
+        persistState();
+        return true;
+      }
+    } catch (e) {
+      console.warn("Supabase sync:", e);
+    }
+    return false;
   },
 
   // 1. Wedding Workspace & Profile

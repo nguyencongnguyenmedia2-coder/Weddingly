@@ -15,10 +15,12 @@ import {
   Sun,
   Moon,
   Bot,
+  Trash2,
 } from "lucide-react";
 import { Wedding } from "@/types/database";
 import { initialSeedWedding } from "@/lib/mock-data";
 import { WeddingService } from "@/services/wedding.service";
+import { WeddingStore } from "@/lib/wedding-store";
 
 export function Header({
   onOpenSearch,
@@ -128,6 +130,19 @@ export function Header({
               <PlusCircle className="h-4 w-4" />
               <span>Tạo đám cưới mới</span>
             </Link>
+            <button
+              onClick={() => {
+                if (confirm("Bạn có chắc chắn muốn xoá toàn bộ dữ liệu mẫu để làm việc với dữ liệu thật?")) {
+                  WeddingStore.clearAllDemoData();
+                  setDropdownOpen(false);
+                  window.location.reload();
+                }
+              }}
+              className="w-full flex items-center gap-2 rounded-[10px] px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Xoá sạch dữ liệu mẫu (Reset)</span>
+            </button>
           </div>
         )}
       </div>

@@ -30,6 +30,12 @@ describe("Wedding Planner Pro - Unit & Business Logic Tests", () => {
 
   describe("Budget Management Calculations", () => {
     it("should calculate remaining budget accurately with 0 overBudget", async () => {
+      await BudgetService.addExpense({
+        categoryName: "Tiệc cưới",
+        title: "Chi phí kiểm thử",
+        amount: 50000000,
+        expenseDate: "2026-10-06",
+      });
       const summary = await BudgetService.getBudgetSummary(300000000);
       expect(summary.totalBudget).toBe(300000000);
       expect(summary.totalSpent).toBeGreaterThan(0);

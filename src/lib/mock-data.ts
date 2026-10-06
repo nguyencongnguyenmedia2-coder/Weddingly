@@ -1,15 +1,28 @@
-import { Wedding, Task, BudgetCategory, Expense, Payment, Guest, WeddingTable, Vendor, TimelineEvent, Checklist, NotificationItem } from "@/types/database";
+import {
+  Wedding,
+  Task,
+  BudgetCategory,
+  Expense,
+  Payment,
+  Guest,
+  WeddingTable,
+  Vendor,
+  TimelineEvent,
+  Checklist,
+  NotificationItem,
+} from "@/types/database";
 
+// Clean Initial Wedding Workspace
 export const initialSeedWedding: Wedding = {
-  id: "11111111-1111-1111-1111-111111111111",
-  name: "Đám cưới Minh Anh & Quốc Minh",
-  slug: "minh-anh-quoc-minh-2027",
-  bride_name: "Nguyễn Minh Anh",
-  groom_name: "Trần Quốc Minh",
-  wedding_date: "2027-05-15",
-  venue: "Riverside Palace, 360D Bến Vân Đồn, Quận 4, TP.HCM",
-  estimated_budget: 300000000,
-  expected_guests: 250,
+  id: "00000000-0000-0000-0000-000000000001",
+  name: "Đám cưới của chúng mình",
+  slug: "dam-cuoi-weddingly",
+  bride_name: "Cô dâu",
+  groom_name: "Chú rể",
+  wedding_date: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+  venue: "Chưa chọn địa điểm",
+  estimated_budget: 0,
+  expected_guests: 0,
   style: "Luxury",
   status: "PLANNING",
   owner_id: "00000000-0000-0000-0000-000000000001",
@@ -19,76 +32,23 @@ export const initialSeedWedding: Wedding = {
   deleted_at: null,
 };
 
+// Standard Recommended Budget Categories (Starting with 0 VND)
 export const initialSeedCategories: BudgetCategory[] = [
-  { id: "bc-1", wedding_id: initialSeedWedding.id, name: "Địa điểm & Tiệc cưới", allocated_amount: 150000000, percentage: 50, color: "#8B5E5A", created_at: new Date().toISOString() },
-  { id: "bc-2", wedding_id: initialSeedWedding.id, name: "Trang trí & Hoa tươi", allocated_amount: 35000000, percentage: 11.6, color: "#D6BE91", created_at: new Date().toISOString() },
-  { id: "bc-3", wedding_id: initialSeedWedding.id, name: "Quay phim & Chụp ảnh", allocated_amount: 35000000, percentage: 11.6, color: "#B89E6C", created_at: new Date().toISOString() },
-  { id: "bc-4", wedding_id: initialSeedWedding.id, name: "Váy cưới & Trang phục", allocated_amount: 25000000, percentage: 8.3, color: "#B48B87", created_at: new Date().toISOString() },
-  { id: "bc-5", wedding_id: initialSeedWedding.id, name: "Trang điểm cô dâu & Mẹ", allocated_amount: 10000000, percentage: 3.3, color: "#3F7D5A", created_at: new Date().toISOString() },
-  { id: "bc-6", wedding_id: initialSeedWedding.id, name: "Thiệp mời & Quà cảm ơn", allocated_amount: 10000000, percentage: 3.3, color: "#C68A27", created_at: new Date().toISOString() },
-  { id: "bc-7", wedding_id: initialSeedWedding.id, name: "Âm thanh, Ánh sáng & MC", allocated_amount: 15000000, percentage: 5.0, color: "#423633", created_at: new Date().toISOString() },
-  { id: "bc-8", wedding_id: initialSeedWedding.id, name: "Dự phòng phát sinh", allocated_amount: 20000000, percentage: 6.9, color: "#6B5E5B", created_at: new Date().toISOString() },
+  { id: "bc-1", wedding_id: initialSeedWedding.id, name: "Địa điểm & Tiệc cưới", allocated_amount: 0, percentage: 50, color: "#8B5E5A", created_at: new Date().toISOString() },
+  { id: "bc-2", wedding_id: initialSeedWedding.id, name: "Trang trí & Hoa tươi", allocated_amount: 0, percentage: 12, color: "#D6BE91", created_at: new Date().toISOString() },
+  { id: "bc-3", wedding_id: initialSeedWedding.id, name: "Quay phim & Chụp ảnh", allocated_amount: 0, percentage: 12, color: "#B89E6C", created_at: new Date().toISOString() },
+  { id: "bc-4", wedding_id: initialSeedWedding.id, name: "Váy cưới & Trang phục", allocated_amount: 0, percentage: 8, color: "#B48B87", created_at: new Date().toISOString() },
+  { id: "bc-5", wedding_id: initialSeedWedding.id, name: "Trang điểm cô dâu & Mẹ", allocated_amount: 0, percentage: 3, color: "#3F7D5A", created_at: new Date().toISOString() },
+  { id: "bc-6", wedding_id: initialSeedWedding.id, name: "Thiệp mời & Quà cảm ơn", allocated_amount: 0, percentage: 3, color: "#C68A27", created_at: new Date().toISOString() },
+  { id: "bc-7", wedding_id: initialSeedWedding.id, name: "Âm thanh, Ánh sáng & MC", allocated_amount: 0, percentage: 5, color: "#423633", created_at: new Date().toISOString() },
+  { id: "bc-8", wedding_id: initialSeedWedding.id, name: "Dự phòng phát sinh", allocated_amount: 0, percentage: 7, color: "#6B5E5B", created_at: new Date().toISOString() },
 ];
 
-export const initialSeedExpenses: Expense[] = [
-  { id: "exp-1", wedding_id: initialSeedWedding.id, category_id: "bc-1", category_name: "Địa điểm & Tiệc cưới", title: "Đặt cọc sảnh tiệc Riverside Grand Ballroom", vendor_name: "Riverside Palace", amount: 50000000, expense_date: "2026-09-15", payment_status: "PAID", receipt_url: null, notes: "Đặt cọc đợt 1", created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "exp-2", wedding_id: initialSeedWedding.id, category_id: "bc-3", category_name: "Quay phim & Chụp ảnh", title: "Gói pre-wedding Đà Lạt 2 ngày 1 đêm", vendor_name: "Lumière Wedding Studio", amount: 22000000, expense_date: "2026-10-01", payment_status: "PAID", receipt_url: null, notes: "Bao gồm 3 váy 2 vest + makeup", created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "exp-3", wedding_id: initialSeedWedding.id, category_id: "bc-4", category_name: "Váy cưới & Trang phục", title: "Thuê váy cưới chính Haute Couture", vendor_name: "Cinderella Bridal", amount: 15000000, expense_date: "2026-10-10", payment_status: "PARTIAL", receipt_url: null, notes: "Đã cọc 5 triệu", created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "exp-4", wedding_id: initialSeedWedding.id, category_id: "bc-2", category_name: "Trang trí & Hoa tươi", title: "Concept hoa tươi Pastel & Thủy tinh", vendor_name: "Fleur De L'Amour Decor", amount: 18000000, expense_date: "2026-10-15", payment_status: "PENDING", receipt_url: null, notes: "Chờ duyệt layout 3D", created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "exp-5", wedding_id: initialSeedWedding.id, category_id: "bc-6", category_name: "Thiệp mời & Quà cảm ơn", title: "In thiệp cưới ép kim cao cấp (250 bộ)", vendor_name: "Hạc Giấy Printing", amount: 6500000, expense_date: "2026-10-20", payment_status: "PAID", receipt_url: null, notes: "Đã nhận mẫu test", created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
-
-export const initialSeedPayments: Payment[] = [
-  { id: "pay-1", wedding_id: initialSeedWedding.id, expense_id: "exp-1", vendor_name: "Riverside Palace", total_amount: 150000000, deposit_amount: 50000000, paid_amount: 50000000, remaining_amount: 100000000, due_date: "2027-04-15", status: "PARTIAL", notes: "Thanh toán đợt 2 trước ngày cưới 1 tháng", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "pay-2", wedding_id: initialSeedWedding.id, expense_id: "exp-2", vendor_name: "Lumière Wedding Studio", total_amount: 22000000, deposit_amount: 10000000, paid_amount: 22000000, remaining_amount: 0, due_date: "2026-10-01", status: "PAID", notes: "Đã hoàn tất thanh toán", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "pay-3", wedding_id: initialSeedWedding.id, expense_id: "exp-3", vendor_name: "Cinderella Bridal", total_amount: 15000000, deposit_amount: 5000000, paid_amount: 5000000, remaining_amount: 10000000, due_date: "2027-05-10", status: "PARTIAL", notes: "Số dư thanh toán khi lấy váy", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "pay-4", wedding_id: initialSeedWedding.id, expense_id: "exp-4", vendor_name: "Fleur De L'Amour Decor", total_amount: 35000000, deposit_amount: 10000000, paid_amount: 0, remaining_amount: 35000000, due_date: "2026-11-01", status: "PENDING", notes: "Cọc 30% khi ký hợp đồng", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-];
-
-export const initialSeedTables: WeddingTable[] = [
-  { id: "tbl-1", wedding_id: initialSeedWedding.id, name: "Bàn VIP 01 - Đại Diện Hai Bên", capacity: 10, table_type: "VIP", sort_order: 1, created_at: new Date().toISOString() },
-  { id: "tbl-2", wedding_id: initialSeedWedding.id, name: "Bàn 02 - Bạn Đại Học Chú Rể", capacity: 10, table_type: "ROUND", sort_order: 2, created_at: new Date().toISOString() },
-  { id: "tbl-3", wedding_id: initialSeedWedding.id, name: "Bàn 03 - Bạn Thân Cô Dâu", capacity: 10, table_type: "ROUND", sort_order: 3, created_at: new Date().toISOString() },
-];
-
-export const initialSeedGuests: Guest[] = [
-  { id: "gst-1", wedding_id: initialSeedWedding.id, name: "Ông Nguyễn Văn Thành (Bố Cô Dâu)", phone: "0912345678", email: "thanh.nguyen@email.com", group_name: "VIP", side: "BRIDE", plus_one: true, children: 0, rsvp_status: "CONFIRMED", rsvp_token: "token-vip-001", meal_preference: "Tiêu chuẩn", table_id: "tbl-1", gift_amount: 0, notes: "Trưởng họ nhà gái", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-2", wedding_id: initialSeedWedding.id, name: "Bà Lê Thị Mai (Mẹ Cô Dâu)", phone: "0912345679", email: "mai.le@email.com", group_name: "VIP", side: "BRIDE", plus_one: false, children: 0, rsvp_status: "CONFIRMED", rsvp_token: "token-vip-002", meal_preference: "Tiêu chuẩn", table_id: "tbl-1", gift_amount: 0, notes: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-3", wedding_id: initialSeedWedding.id, name: "Ông Trần Văn Hùng (Bố Chú Rể)", phone: "0987654321", email: "hung.tran@email.com", group_name: "VIP", side: "GROOM", plus_one: true, children: 0, rsvp_status: "CONFIRMED", rsvp_token: "token-vip-003", meal_preference: "Tiêu chuẩn", table_id: "tbl-1", gift_amount: 0, notes: "Trưởng họ nhà trai", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-4", wedding_id: initialSeedWedding.id, name: "Bà Phạm Hồng Nhung (Mẹ Chú Rể)", phone: "0987654322", email: "nhung.pham@email.com", group_name: "VIP", side: "GROOM", plus_one: false, children: 0, rsvp_status: "CONFIRMED", rsvp_token: "token-vip-004", meal_preference: "Tiêu chuẩn", table_id: "tbl-1", gift_amount: 0, notes: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-5", wedding_id: initialSeedWedding.id, name: "Đặng Tuấn Anh (Phù Rể)", phone: "0903334444", email: "tuananh@gmail.com", group_name: "Bạn bè", side: "GROOM", plus_one: true, children: 0, rsvp_status: "CONFIRMED", rsvp_token: "token-friend-005", meal_preference: "Không ăn hải sản", table_id: "tbl-2", gift_amount: 0, notes: "Hỗ trợ đón khách", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-6", wedding_id: initialSeedWedding.id, name: "Vũ Phương Thảo (Phù Dâu)", phone: "0905556666", email: "thao.vu@gmail.com", group_name: "Bạn bè", side: "BRIDE", plus_one: true, children: 0, rsvp_status: "CONFIRMED", rsvp_token: "token-friend-006", meal_preference: "Ăn chay", table_id: "tbl-3", gift_amount: 0, notes: "Hỗ trợ trang phục", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-7", wedding_id: initialSeedWedding.id, name: "Lê Hoàng Nam", phone: "0907778888", email: "nam.le@company.com", group_name: "Đồng nghiệp", side: "GROOM", plus_one: false, children: 0, rsvp_status: "PENDING", rsvp_token: "token-colleague-007", meal_preference: null, table_id: null, gift_amount: 0, notes: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "gst-8", wedding_id: initialSeedWedding.id, name: "Hoàng Minh Trí", phone: "0909990000", email: "tri.hoang@email.com", group_name: "Bạn bè", side: "GROOM", plus_one: true, children: 1, rsvp_status: "PENDING", rsvp_token: "token-friend-008", meal_preference: null, table_id: null, gift_amount: 0, notes: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
-
-export const initialSeedTasks: Task[] = [
-  { id: "tsk-1", wedding_id: initialSeedWedding.id, title: "Khảo sát và chốt địa điểm tổ chức tiệc", description: "So sánh 3 trung tâm Riverside Palace, Gem Center, Capella Gallery Hall", category: "Địa điểm", status: "COMPLETED", priority: "URGENT", due_date: "2026-09-15", assignee_id: null, estimated_cost: 0, sort_order: 1, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-2", wedding_id: initialSeedWedding.id, title: "Chụp ảnh pre-wedding ngoại cảnh Đà Lạt", description: "Ekip Lumière Studio, chuẩn bị 3 concept đồ", category: "Chụp ảnh", status: "COMPLETED", priority: "HIGH", due_date: "2026-10-02", assignee_id: null, estimated_cost: 22000000, sort_order: 2, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-3", wedding_id: initialSeedWedding.id, title: "Thử váy cưới chính và chốt số đo", description: "Lịch hẹn tại Cinderella Bridal lúc 14h thứ Bảy", category: "Trang phục", status: "IN_PROGRESS", priority: "HIGH", due_date: "2026-11-20", assignee_id: null, estimated_cost: 15000000, sort_order: 3, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-4", wedding_id: initialSeedWedding.id, title: "Lập danh sách khách mời sơ bộ hai họ", description: "Mục tiêu 250 khách, phân loại nhà trai và nhà gái", category: "Khách mời", status: "IN_PROGRESS", priority: "MEDIUM", due_date: "2026-12-01", assignee_id: null, estimated_cost: 0, sort_order: 4, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-5", wedding_id: initialSeedWedding.id, title: "Chọn mẫu thiệp cưới và duyệt nội dung in", description: "Mẫu thiệp giấy mỹ thuật ép kim vàng champagne", category: "Thiệp cưới", status: "TODO", priority: "MEDIUM", due_date: "2027-01-15", assignee_id: null, estimated_cost: 8000000, sort_order: 5, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-6", wedding_id: initialSeedWedding.id, title: "Đặt cọc dịch vụ hoa tươi và backdrop", description: "Tone màu Champagne & Rose Brown sang trọng", category: "Trang trí", status: "TODO", priority: "HIGH", due_date: "2027-02-10", assignee_id: null, estimated_cost: 35000000, sort_order: 6, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-7", wedding_id: initialSeedWedding.id, title: "Gửi thiệp mời online qua Zalo và SMS", description: "Kèm link website cưới và form RSVP tự động", category: "Thiệp cưới", status: "TODO", priority: "MEDIUM", due_date: "2027-03-20", assignee_id: null, estimated_cost: 0, sort_order: 7, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-8", wedding_id: initialSeedWedding.id, title: "Duyệt thực đơn tiệc cưới và nếm món (food tasting)", description: "Nếm 6 món chính tại nhà hàng cùng ba mẹ hai bên", category: "Ẩm thực", status: "TODO", priority: "HIGH", due_date: "2027-04-05", assignee_id: null, estimated_cost: 3000000, sort_order: 8, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-9", wedding_id: initialSeedWedding.id, title: "Sắp xếp sơ đồ chỗ ngồi các bàn tiệc", description: "Xếp bàn VIP, đồng nghiệp, bạn bè cấp 3 và đại học", category: "Khách mời", status: "TODO", priority: "MEDIUM", due_date: "2027-05-01", assignee_id: null, estimated_cost: 0, sort_order: 9, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "tsk-10", wedding_id: initialSeedWedding.id, title: "Chốt kịch bản MC và timeline ngày cưới", description: "Rehearsal cùng wedding planner và ban nhạc", category: "Timeline", status: "TODO", priority: "URGENT", due_date: "2027-05-10", assignee_id: null, estimated_cost: 0, sort_order: 10, created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
-
-export const initialSeedVendors: Vendor[] = [
-  { id: "vnd-1", wedding_id: initialSeedWedding.id, name: "Riverside Palace Convention Center", category: "Địa điểm", phone: "028 6256 8888", email: "contact@riversidepalace.vn", website: "https://riversidepalace.vn", address: "360D Bến Vân Đồn, Q.4, TP.HCM", price: 150000000, rating: 4.9, status: "BOOKED", is_favorite: true, notes: "Đã cọc 50 triệu", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "vnd-2", wedding_id: initialSeedWedding.id, name: "Lumière Studio Saigon", category: "Chụp ảnh", phone: "0938 112 334", email: "hello@lumierestudio.vn", website: "https://lumierestudio.vn", address: "Quận 3, TP.HCM", price: 22000000, rating: 5.0, status: "BOOKED", is_favorite: true, notes: "Nhiếp ảnh gia chính: Tuấn Hùng", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "vnd-3", wedding_id: initialSeedWedding.id, name: "Cinderella Bridal Couture", category: "Váy cưới", phone: "0908 998 776", email: "cinderella@bridal.vn", website: "https://cinderellabridal.vn", address: "Hai Bà Trưng, Q.1, TP.HCM", price: 15000000, rating: 4.8, status: "BOOKED", is_favorite: true, notes: "Váy đuôi cá thắt eo ren Pháp", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "vnd-4", wedding_id: initialSeedWedding.id, name: "Fleur De L'Amour Decor", category: "Trang trí", phone: "0911 223 344", email: "fleurdecor@gmail.com", website: "https://fleurdelamour.vn", address: "Bình Thạnh, TP.HCM", price: 35000000, rating: 4.9, status: "QUOTED", is_favorite: true, notes: "Gói hoa nhập khẩu tone Champagne Rose", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "vnd-5", wedding_id: initialSeedWedding.id, name: "The Adam Store Suits", category: "Vest cưới", phone: "028 3822 5566", email: "contact@adamstore.vn", website: "https://adamstorevn.com", address: "Quận 1, TP.HCM", price: 7500000, rating: 4.7, status: "BOOKED", is_favorite: false, notes: "Vest đen cổ điển cho chú rể", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-];
-
-export const initialSeedTimeline: TimelineEvent[] = [
-  { id: "tme-1", wedding_id: initialSeedWedding.id, title: "Trang điểm cô dâu và làm tóc", event_date: "2027-05-15", start_time: "06:30", end_time: "08:30", location: "Phòng cô dâu tại gia", assignee_name: "Chuyên viên Makeup Linh Trang", contact_phone: "0909123456", description: "Hoàn tất trang điểm và mặc áo dài lễ", status: "UPCOMING", sort_order: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "tme-2", wedding_id: initialSeedWedding.id, title: "Lễ Rước dâu & Gia tiên tại Nhà gái", event_date: "2027-05-15", start_time: "09:00", end_time: "10:30", location: "Tư gia Nhà gái", assignee_name: "Hai bên gia đình & MC", contact_phone: "0912345678", description: "Nghi thức trao tráp, chào tổ tiên và mừng tuổi", status: "UPCOMING", sort_order: 2, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "tme-3", wedding_id: initialSeedWedding.id, title: "Ekip kiểm tra âm thanh, ánh sáng & hoa sảnh tiệc", event_date: "2027-05-15", start_time: "16:00", end_time: "17:00", location: "Riverside Grand Ballroom", assignee_name: "Wedding Planner & Quản lý sảnh", contact_phone: "0938112334", description: "Bật điều hòa, test video phóng sự cưới", status: "UPCOMING", sort_order: 3, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "tme-4", wedding_id: initialSeedWedding.id, title: "Đón tiếp khách mời & Chụp hình lưu niệm tại Backdrop", event_date: "2027-05-15", start_time: "17:30", end_time: "18:45", location: "Foyer sảnh tiệc", assignee_name: "Cô dâu chú rể, dàn phù dâu phù rể", contact_phone: "0903334444", description: "Nhạc acoustic nhẹ nhàng, phục vụ cocktail đón khách", status: "UPCOMING", sort_order: 4, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "tme-5", wedding_id: initialSeedWedding.id, title: "Lễ Thành hôn chính thức & First Dance", event_date: "2027-05-15", start_time: "19:00", end_time: "19:40", location: "Sân khấu chính", assignee_name: "MC Hoàng Vũ & Ban nhạc", contact_phone: "0905556666", description: "Chiếu video hành trình yêu, trao nhẫn và cắt bánh cưới", status: "UPCOMING", sort_order: 5, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "tme-6", wedding_id: initialSeedWedding.id, title: "Khai tiệc chiêu đãi và chúc rượu từng bàn", event_date: "2027-05-15", start_time: "19:45", end_time: "21:15", location: "Sảnh tiệc", assignee_name: "Cô dâu chú rể & Ba mẹ hai bên", contact_phone: "0912345678", description: "Giao lưu cùng bạn bè và đồng nghiệp", status: "UPCOMING", sort_order: 6, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "tme-7", wedding_id: initialSeedWedding.id, title: "After Party & Bắt hoa cưới", event_date: "2027-05-15", start_time: "21:30", end_time: "23:00", location: "Lounge ngoài trời Riverside", assignee_name: "Dàn bạn bè thân thiết", contact_phone: "0903334444", description: "Âm nhạc DJ sôi động, minigame tung hoa cưới", status: "UPCOMING", sort_order: 7, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-];
+// Clean lists - Zero Demo Data
+export const initialSeedExpenses: Expense[] = [];
+export const initialSeedPayments: Payment[] = [];
+export const initialSeedTables: WeddingTable[] = [];
+export const initialSeedGuests: Guest[] = [];
+export const initialSeedTasks: Task[] = [];
+export const initialSeedVendors: Vendor[] = [];
+export const initialSeedTimeline: TimelineEvent[] = [];
