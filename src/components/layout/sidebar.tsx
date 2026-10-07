@@ -27,10 +27,13 @@ import {
   ShieldAlert,
   Crown,
   Lock,
+  PackageCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AuthService, AuthUser } from "@/services/auth.service";
+import { SubscriptionService } from "@/services/subscription.service";
 import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
+import { UserOrderTrackingModal } from "@/components/modals/user-order-tracking-modal";
 
 interface NavGroup {
   title: string;
@@ -88,20 +91,29 @@ export function Sidebar() {
   const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
   const [isUpgradeOpen, setIsUpgradeOpen] = React.useState(false);
   const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
+  const [isOrderTrackingOpen, setIsOrderTrackingOpen] = React.useState(false);
+  const [pendingOrderCount, setPendingOrderCount] = React.useState(0);
 
   React.useEffect(() => {
     const syncUser = () => {
-      setCurrentUser(AuthService.getCurrentUser());
+      const user = AuthService.getCurrentUser();
+      setCurrentUser(user);
+      const orders = SubscriptionService.getUserOrders(user?.id);
+      setPendingOrderCount(orders.filter((o) => o.status === "PENDING").length);
     };
     syncUser();
 
     if (typeof window !== "undefined") {
       window.addEventListener("weddingly_auth_changed", syncUser);
+      window.addEventListener("weddingly_orders_changed", syncUser);
+      window.addEventListener("storage", syncUser);
     }
 
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("weddingly_auth_changed", syncUser);
+        window.removeEventListener("weddingly_orders_changed", syncUser);
+        window.removeEventListener("storage", syncUser);
       }
     };
   }, []);
@@ -197,25 +209,45 @@ export function Sidebar() {
           </div>
         ))}
 
-        {/* Admin Link */}
+        {/* Admin Link - Always accessible for platform administrators */}
         <div className="pt-2 border-t border-[#EADBCE] dark:border-[#3A302E]">
           <Link
             href="/admin"
             className={cn(
-              "group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-xs font-medium transition-colors",
+              "group flex items-center justify-between rounded-[10px] px-2.5 py-2 text-xs font-medium transition-colors",
               pathname.startsWith("/admin")
                 ? "bg-[#2C2422] text-[#D6BE91]"
                 : "text-[#6B5E5B] hover:bg-[#F5EFE7] dark:text-[#A69591] dark:hover:bg-[#221C1B]"
             )}
+            title="Trung tâm Quản trị Tổng hệ thống Weddingly SaaS"
           >
-            <ShieldAlert className="h-4 w-4 text-[#8B5E5A]" />
-            <span>Quản trị viên (Admin)</span>
+            <div className="flex items-center gap-2.5">
+              <ShieldAlert className="h-4 w-4 text-[#8B5E5A]" />
+              <span>Quản trị viên (Admin)</span>
+            </div>
+            {currentUser?.role === "ADMIN" ? (
+              <span className="px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider bg-[#D6BE91] text-[#14100F] font-extrabold">
+                Super Admin
+              </span>
+            ) : null}
           </Link>
         </div>
       </nav>
 
       {/* Subscription Plan Card */}
-      {currentUser?.plan === "PRO" ? (
+      {currentUser?.plan === "VIP" ? (
+        <div className="mx-3 p-3 rounded-[14px] bg-gradient-to-br from-amber-500/20 via-yellow-500/15 to-stone-900 border border-amber-400/50 shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="p-1 rounded-md bg-gradient-to-r from-amber-400 to-yellow-500 text-stone-900 shadow-xs">
+              <Crown className="h-3.5 w-3.5 fill-current" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-amber-900 dark:text-amber-200">Gói Kim Cương (VIP LUXURY)</p>
+              <p className="text-[9px] text-amber-700/80 dark:text-amber-300/80">Đặc quyền cao cấp tối thượng</p>
+            </div>
+          </div>
+        </div>
+      ) : currentUser?.plan === "PRO" ? (
         <div className="mx-3 p-3 rounded-[14px] bg-gradient-to-br from-amber-500/10 via-yellow-500/10 to-amber-500/5 border border-amber-400/40 dark:border-amber-500/30">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded-md bg-amber-500 text-white shadow-xs">
@@ -250,6 +282,29 @@ export function Sidebar() {
         </div>
       )}
 
+      {/* Order Tracking Button */}
+      <div className="mx-3 mt-1.5 mb-1">
+        <button
+          type="button"
+          onClick={() => setIsOrderTrackingOpen(true)}
+          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[10px] text-[11px] font-medium text-[#6B5E5B] hover:text-[#2C2422] hover:bg-[#F5EFE7] dark:text-[#A69591] dark:hover:bg-[#221C1B] dark:hover:text-[#F5EFE7] transition-all cursor-pointer group border border-transparent hover:border-[#EADBCE] dark:hover:border-[#3A302E]"
+        >
+          <span className="flex items-center gap-1.5">
+            <PackageCheck className="h-3.5 w-3.5 text-[#8B5E5A] dark:text-[#D6BE91]" />
+            <span>Theo dõi đơn mua gói</span>
+          </span>
+          {pendingOrderCount > 0 ? (
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500 text-white animate-pulse">
+              {pendingOrderCount} chờ duyệt
+            </span>
+          ) : (
+            <span className="text-[10px] text-[#A69591] group-hover:translate-x-0.5 transition-transform">
+              &rarr;
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Emma AI Clickable Card */}
       <div
         onClick={handleOpenEmma}
@@ -278,6 +333,12 @@ export function Sidebar() {
           upgradeReason ||
           "Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để trải nghiệm toàn bộ tiện ích quản lý đám cưới không giới hạn."
         }
+      />
+
+      <UserOrderTrackingModal
+        open={isOrderTrackingOpen}
+        onOpenChange={setIsOrderTrackingOpen}
+        onOpenUpgradeModal={() => setIsUpgradeOpen(true)}
       />
     </aside>
   );

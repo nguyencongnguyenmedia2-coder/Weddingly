@@ -1067,7 +1067,8 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <Link href="/login" className="hover:text-white">Đăng nhập</Link>
             <Link href="/register" className="hover:text-white">Đăng ký</Link>
-            <Link href="/admin" className="hover:text-white">Quản trị hệ thống</Link>
+            <span className="text-white/40">|</span>
+            <span className="text-white/70">Hotline: 1900 6868</span>
           </div>
         </div>
       </footer>

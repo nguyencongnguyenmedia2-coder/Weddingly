@@ -14,7 +14,59 @@ export type RSVPStatus = "PENDING" | "CONFIRMED" | "DECLINED";
 export type PaymentStatus = "PENDING" | "PARTIAL" | "PAID" | "OVERDUE";
 export type VendorStatus = "INQUIRY" | "CONTACTED" | "QUOTED" | "BOOKED" | "DECLINED";
 export type GuestSide = "BRIDE" | "GROOM" | "BOTH";
-export type SubscriptionPlan = "FREE" | "PRO";
+export type SubscriptionPlan = "FREE" | "PRO" | "VIP";
+
+export type SubscriptionOrderStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type SubscriptionPaymentMethod = "VIETQR" | "BANK_TRANSFER";
+
+export interface SubscriptionOrder {
+  id: string;
+  code: string;
+  user_id: string;
+  user_email: string;
+  user_name: string;
+  user_phone?: string;
+  wedding_id?: string;
+  wedding_title?: string;
+  plan: SubscriptionPlan;
+  amount: number;
+  payment_method: SubscriptionPaymentMethod;
+  transfer_content: string;
+  status: SubscriptionOrderStatus;
+  proof_image_url?: string;
+  notes?: string;
+  rejection_reason?: string;
+  reviewed_by?: string;
+  created_at: string;
+  reviewed_at?: string;
+}
+
+export interface BankConfig {
+  bank_name: string;
+  bank_code: string;
+  account_number: string;
+  account_name: string;
+  branch?: string;
+  hotline?: string;
+  pro_price: number;
+  vip_price: number;
+}
+
+export interface CustomerUserRecord {
+  id: string;
+  email: string;
+  full_name: string;
+  phone?: string;
+  role: "USER" | "PLANNER" | "ADMIN";
+  plan: SubscriptionPlan;
+  wedding_title?: string;
+  bride_name?: string;
+  groom_name?: string;
+  wedding_date?: string;
+  created_at: string;
+  total_spent?: number;
+  status?: "ACTIVE" | "PENDING" | "INACTIVE";
+}
 
 export interface Profile {
   id: string;

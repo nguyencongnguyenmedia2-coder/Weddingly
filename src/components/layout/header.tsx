@@ -17,13 +17,16 @@ import {
   Bot,
   Trash2,
   Crown,
+  PackageCheck,
 } from "lucide-react";
 import { Wedding } from "@/types/database";
 import { initialSeedWedding } from "@/lib/mock-data";
 import { WeddingService } from "@/services/wedding.service";
 import { WeddingStore } from "@/lib/wedding-store";
 import { AuthService, AuthUser } from "@/services/auth.service";
+import { SubscriptionService } from "@/services/subscription.service";
 import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
+import { UserOrderTrackingModal } from "@/components/modals/user-order-tracking-modal";
 
 export function Header({
   onOpenSearch,
@@ -36,6 +39,8 @@ export function Header({
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
   const [isUpgradeOpen, setIsUpgradeOpen] = React.useState(false);
+  const [isOrderTrackingOpen, setIsOrderTrackingOpen] = React.useState(false);
+  const [pendingOrderCount, setPendingOrderCount] = React.useState(0);
 
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
@@ -44,12 +49,17 @@ export function Header({
     WeddingService.getUserWeddings().then(setWeddings);
 
     const syncUser = () => {
-      setCurrentUser(AuthService.getCurrentUser());
+      const user = AuthService.getCurrentUser();
+      setCurrentUser(user);
+      const orders = SubscriptionService.getUserOrders(user?.id);
+      setPendingOrderCount(orders.filter((o) => o.status === "PENDING").length);
     };
     syncUser();
 
     if (typeof window !== "undefined") {
       window.addEventListener("weddingly_auth_changed", syncUser);
+      window.addEventListener("weddingly_orders_changed", syncUser);
+      window.addEventListener("storage", syncUser);
     }
 
     // Sync dark mode preference
@@ -65,6 +75,8 @@ export function Header({
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("weddingly_auth_changed", syncUser);
+        window.removeEventListener("weddingly_orders_changed", syncUser);
+        window.removeEventListener("storage", syncUser);
       }
     };
   }, []);
@@ -214,21 +226,48 @@ export function Header({
           </span>
         </Link>
 
+        {/* Order Tracking Button */}
+        <button
+          onClick={() => setIsOrderTrackingOpen(true)}
+          className="relative rounded-[12px] border border-[#EADBCE] bg-white p-2 sm:p-2.5 text-[#6B5E5B] shadow-sm hover:border-[#D6BE91] hover:text-[#8B5E5A] transition-colors dark:bg-[#221C1B] dark:border-[#3A302E] dark:text-[#A69591] cursor-pointer"
+          title="Theo dõi đơn mua gói & trạng thái duyệt"
+        >
+          <PackageCheck className="h-4 w-4" />
+          {pendingOrderCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white shadow-xs animate-pulse">
+              {pendingOrderCount}
+            </span>
+          )}
+        </button>
+
         {/* Plan Upgrade / Status */}
-        {currentUser?.plan === "PRO" ? (
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-yellow-500/20 border border-amber-400/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold shadow-xs">
+        {currentUser?.plan === "VIP" ? (
+          <button
+            onClick={() => setIsOrderTrackingOpen(true)}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-stone-900 text-[11px] font-extrabold shadow-xs hover:brightness-105 transition-all cursor-pointer"
+            title="Bấm để xem thông tin gói & lịch sử đơn hàng"
+          >
+            <Crown className="h-3.5 w-3.5 fill-stone-900" />
+            <span>VIP LUXURY</span>
+          </button>
+        ) : currentUser?.plan === "PRO" ? (
+          <button
+            onClick={() => setIsOrderTrackingOpen(true)}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-yellow-500/20 border border-amber-400/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold shadow-xs hover:brightness-105 transition-all cursor-pointer"
+            title="Bấm để xem thông tin gói & lịch sử đơn hàng"
+          >
             <Crown className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
             <span>PRO VIP</span>
-          </div>
+          </button>
         ) : (
           <button
             onClick={() => setIsUpgradeOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-[#8B5E5A] to-[#6A4643] text-white text-[11px] font-semibold hover:shadow-md hover:brightness-110 transition-all cursor-pointer"
-            title="Nâng cấp lên gói Hoàn Mỹ PRO"
+            title="Nâng cấp gói dịch vụ"
           >
             <Sparkles className="h-3.5 w-3.5 text-[#D6BE91]" />
-            <span className="hidden sm:inline">Nâng cấp PRO</span>
-            <span className="sm:hidden">PRO</span>
+            <span className="hidden sm:inline">Nâng cấp gói</span>
+            <span className="sm:hidden">Gói VIP</span>
           </button>
         )}
 
@@ -244,7 +283,11 @@ export function Header({
               {currentUser?.full_name || wedding.bride_name || "Khách hàng"}
             </p>
             <p className="text-[10px] text-[#8B5E5A] dark:text-[#D6BE91] mt-0.5 font-medium flex items-center gap-1">
-              {currentUser?.plan === "PRO" ? "Gói Hoàn Mỹ" : "Gói Miễn Phí"}
+              {currentUser?.plan === "VIP"
+                ? "Gói Kim Cương"
+                : currentUser?.plan === "PRO"
+                ? "Gói Hoàn Mỹ"
+                : "Gói Miễn Phí"}
             </p>
           </div>
           <button
@@ -264,6 +307,12 @@ export function Header({
         open={isUpgradeOpen}
         onOpenChange={setIsUpgradeOpen}
         reason="Nâng cấp lên Gói Hoàn Mỹ (PRO VIP) để không giới hạn khách mời, quản lý chi tiêu và sử dụng đầy đủ các tính năng độc quyền."
+      />
+
+      <UserOrderTrackingModal
+        open={isOrderTrackingOpen}
+        onOpenChange={setIsOrderTrackingOpen}
+        onOpenUpgradeModal={() => setIsUpgradeOpen(true)}
       />
     </header>
   );

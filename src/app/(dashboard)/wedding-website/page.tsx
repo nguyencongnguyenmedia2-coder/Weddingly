@@ -56,7 +56,7 @@ import {
   ImageMotionConfig,
   defaultWebsiteConfig,
 } from "@/lib/wedding-store";
-import { Wedding } from "@/types/database";
+import { Wedding, SubscriptionPlan } from "@/types/database";
 import { AuthService } from "@/services/auth.service";
 import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
 
@@ -73,7 +73,7 @@ export default function WeddingWebsiteBuilderPage() {
   const [savedSuccess, setSavedSuccess] = React.useState(false);
 
   // Subscription plan states
-  const [userPlan, setUserPlan] = React.useState<"FREE" | "PRO">("FREE");
+  const [userPlan, setUserPlan] = React.useState<SubscriptionPlan>("FREE");
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
 

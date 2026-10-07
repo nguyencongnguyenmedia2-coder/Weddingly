@@ -23,7 +23,7 @@ import { Modal } from "@/components/ui/dialog";
 import { formatCurrencyVND } from "@/lib/utils";
 import { BudgetService } from "@/services/budget.service";
 import { VendorService } from "@/services/vendor.service";
-import { Expense, PaymentStatus, Vendor } from "@/types/database";
+import { Expense, PaymentStatus, Vendor, SubscriptionPlan } from "@/types/database";
 import { AuthService } from "@/services/auth.service";
 import { TierService } from "@/services/tier.service";
 import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
@@ -39,7 +39,7 @@ export default function ExpensesPage() {
   const [editingExpense, setEditingExpense] = React.useState<Expense | null>(null);
 
   // Subscription plan & quota states
-  const [userPlan, setUserPlan] = React.useState<"FREE" | "PRO">("FREE");
+  const [userPlan, setUserPlan] = React.useState<SubscriptionPlan>("FREE");
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
 

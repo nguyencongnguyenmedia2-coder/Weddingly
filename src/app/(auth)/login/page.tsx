@@ -28,8 +28,13 @@ function LoginForm() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      await AuthService.login(email, password);
-      router.push(redirect);
+      const res = await AuthService.login(email, password);
+      if (res.user?.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        const safeRedirect = redirect === "/admin" || redirect.startsWith("/admin") ? "/dashboard" : redirect;
+        router.push(safeRedirect);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
       setLoading(false);

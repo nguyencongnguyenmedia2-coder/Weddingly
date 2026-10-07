@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,12 @@ export function Modal({
   children,
   maxWidth = "md",
 }: ModalProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -37,7 +44,7 @@ export function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const widthClasses = {
     sm: "max-w-md",
@@ -46,22 +53,22 @@ export function Modal({
     xl: "max-w-4xl",
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#2C2422]/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-[#14100F]/75 backdrop-blur-md transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative w-full rounded-[20px] bg-white p-4 sm:p-6 shadow-2xl transition-all border border-[#EADBCE] dark:bg-[#221C1B] dark:border-[#3A302E] max-h-[88vh] overflow-y-auto z-10",
+          "relative w-full rounded-[24px] bg-white p-5 sm:p-7 shadow-2xl transition-all border border-[#EADBCE] dark:bg-[#1E1817] dark:border-[#3A302E] max-h-[90vh] overflow-y-auto z-10",
           widthClasses[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between pb-3 border-b border-[#EADBCE] dark:border-[#3A302E]">
+        <div className="flex items-center justify-between pb-3.5 border-b border-[#EADBCE] dark:border-[#3A302E]">
           <div>
             <h3 className="font-serif text-base sm:text-xl font-bold text-[#2C2422] dark:text-[#F5EFE7]">
               {title}
@@ -83,4 +90,6 @@ export function Modal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

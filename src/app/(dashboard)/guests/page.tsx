@@ -27,7 +27,7 @@ import { Card, Badge, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
 import { GuestService, GuestStats } from "@/services/guest.service";
-import { Guest, RSVPStatus, GuestSide, WeddingTable } from "@/types/database";
+import { Guest, RSVPStatus, GuestSide, WeddingTable, SubscriptionPlan } from "@/types/database";
 import { AuthService } from "@/services/auth.service";
 import { TierService } from "@/services/tier.service";
 import { UpgradePlanModal } from "@/components/modals/upgrade-plan-modal";
@@ -46,7 +46,7 @@ export default function GuestsPage() {
   const [editingGuest, setEditingGuest] = React.useState<Guest | null>(null);
 
   // Subscription plan & quota states
-  const [userPlan, setUserPlan] = React.useState<"FREE" | "PRO">("FREE");
+  const [userPlan, setUserPlan] = React.useState<SubscriptionPlan>("FREE");
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [upgradeReason, setUpgradeReason] = React.useState<string | undefined>(undefined);
 

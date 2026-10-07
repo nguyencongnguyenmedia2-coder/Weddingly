@@ -86,10 +86,21 @@ export class AuthService {
       console.warn("Supabase auth signUp fallback:", err);
     }
 
-    // 2. Persist local user session & cookie
+    // 2. Persist local user session & cookie, and save to registered users registry
     if (typeof window !== "undefined") {
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
       setSessionCookie(user.id);
+
+      try {
+        const regStr = localStorage.getItem("weddingly_registered_users_registry");
+        const regList: AuthUser[] = regStr ? JSON.parse(regStr) : [];
+        const existingIdx = regList.findIndex((u) => u.email.toLowerCase() === user.email.toLowerCase());
+        if (existingIdx >= 0) regList[existingIdx] = user;
+        else regList.push(user);
+        localStorage.setItem("weddingly_registered_users_registry", JSON.stringify(regList));
+      } catch (e) {
+        console.warn("Registry save error:", e);
+      }
     }
 
     // 3. Create dedicated private wedding for this new user
@@ -117,6 +128,12 @@ export class AuthService {
     const supabase = createClient();
     const cleanEmail = email.toLowerCase().trim();
 
+    // 0. Super Admin Account: ONLY strictly 'admin@weddingly.vn' is Super Admin
+    if (cleanEmail === "admin@weddingly.vn") {
+      const adminUser = await this.loginAsAdmin();
+      return { user: adminUser };
+    }
+
     // 1. Try Supabase Auth login
     try {
       if (password) {
@@ -142,22 +159,99 @@ export class AuthService {
       console.warn("Supabase login fallback:", err);
     }
 
-    // 2. Check local accounts or auto-authenticate
+    // 2. Check registered accounts registry & customers directory
+    let existingUser: AuthUser | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const regStr = localStorage.getItem("weddingly_registered_users_registry");
+        if (regStr) {
+          const regList: AuthUser[] = JSON.parse(regStr);
+          existingUser = regList.find((u) => u.email.toLowerCase() === cleanEmail) || null;
+        }
+
+        if (!existingUser) {
+          const custStr = localStorage.getItem("weddingly_customers_directory");
+          if (custStr) {
+            const custList = JSON.parse(custStr);
+            const foundCust = custList.find((c: any) => c.email && c.email.toLowerCase() === cleanEmail);
+            if (foundCust) {
+              existingUser = {
+                id: foundCust.id,
+                email: foundCust.email,
+                full_name: foundCust.full_name,
+                phone: foundCust.phone,
+                role: foundCust.role || "USER",
+                plan: foundCust.plan || "FREE",
+                created_at: foundCust.created_at || new Date().toISOString(),
+              };
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Registry read error:", e);
+      }
+    }
+
+    if (existingUser) {
+      // Use existing user credentials (Strictly respect their registered role!)
+      if (typeof window !== "undefined") {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(existingUser));
+        setSessionCookie(existingUser.id);
+        window.dispatchEvent(new Event("weddingly_auth_changed"));
+      }
+      return { user: existingUser };
+    }
+
+    // 3. Admin Account: ONLY strictly 'admin@weddingly.vn' is Super Admin
+    const isStrictAdmin = cleanEmail === "admin@weddingly.vn";
+
+    const userWedding = WeddingStore.getWedding();
+    const formattedEmailPrefix = cleanEmail.split("@")[0].replace(/[^a-zA-Z0-9]/g, " ").trim();
+    const fallbackName = isStrictAdmin
+      ? "Super Administrator"
+      : userWedding?.bride_name && userWedding.bride_name !== "Cô dâu"
+      ? `${userWedding.bride_name} & ${userWedding.groom_name}`
+      : formattedEmailPrefix
+      ? formattedEmailPrefix.charAt(0).toUpperCase() + formattedEmailPrefix.slice(1)
+      : "Khách hàng";
+
     const user: AuthUser = {
-      id: crypto.randomUUID(),
+      id: isStrictAdmin ? "admin-system-root-id" : crypto.randomUUID(),
       email: cleanEmail,
-      full_name: cleanEmail.split("@")[0].toUpperCase(),
-      role: "USER",
-      plan: "FREE",
+      full_name: fallbackName,
+      phone: isStrictAdmin ? "0988 888 888" : "",
+      role: isStrictAdmin ? "ADMIN" : "USER",
+      plan: isStrictAdmin ? "VIP" : "FREE",
       created_at: new Date().toISOString(),
     };
 
     if (typeof window !== "undefined") {
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
       setSessionCookie(user.id);
+      window.dispatchEvent(new Event("weddingly_auth_changed"));
     }
 
     return { user };
+  }
+
+  static async loginAsAdmin(): Promise<AuthUser> {
+    const adminUser: AuthUser = {
+      id: "admin-system-root-id",
+      email: "admin@weddingly.vn",
+      full_name: "Super Administrator",
+      phone: "0988 888 888",
+      role: "ADMIN",
+      plan: "VIP",
+      created_at: "2026-01-01T00:00:00Z",
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(adminUser));
+      setSessionCookie(adminUser.id);
+      window.dispatchEvent(new Event("weddingly_auth_changed"));
+    }
+
+    return adminUser;
   }
 
   static async logout(): Promise<void> {
@@ -175,18 +269,18 @@ export class AuthService {
     }
   }
 
-  static async upgradeToPro(): Promise<AuthUser | null> {
+  static async upgradePlan(plan: SubscriptionPlan = "PRO"): Promise<AuthUser | null> {
     const current = this.getCurrentUser();
     if (!current) return null;
 
-    current.plan = "PRO";
+    current.plan = plan;
     if (typeof window !== "undefined") {
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(current));
     }
 
     // Update active wedding plan
     WeddingStore.updateWedding({
-      plan: "PRO",
+      plan,
     });
 
     if (typeof window !== "undefined") {
@@ -194,5 +288,9 @@ export class AuthService {
     }
 
     return current;
+  }
+
+  static async upgradeToPro(): Promise<AuthUser | null> {
+    return this.upgradePlan("PRO");
   }
 }
